@@ -1,0 +1,483 @@
+openapi: 3.0.3
+info:
+  title: Personal Banking API
+  version: 1.0.0
+  description: >
+    API documentation for Personal Banking.
+    Base URL: `http://localhost:8080/api/v1/`
+
+servers:
+  - url: http://localhost:8080/api/v1/
+    description: Local API Server
+
+paths:
+  /auth/register/personal-details/template:
+    get:
+      summary: Get template options for personal details registration
+      operationId: getPersonalDetailsTemplate
+      responses:
+        '200':
+          description: Template data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genderOptions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                  nationalityOptions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+
+  /auth/register/personal-details:
+    post:
+      summary: Register personal details
+      operationId: registerPersonalDetails
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - fullname
+                - dateOfBirth
+                - genderId
+                - nationalityId
+                - kycType
+                - kycData
+              properties:
+                email:
+                  type: string
+                fullname:
+                  type: string
+                dateOfBirth:
+                  type: string
+                  format: date
+                genderId:
+                  type: integer
+                nationalityId:
+                  type: integer
+                kycType:
+                  type: string
+                kycData:
+                  type: string
+      responses:
+        '200':
+          description: Personal details registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+        '400':
+          description: Email already exists
+
+  /auth/register/kyc-upload:
+    post:
+      summary: Upload KYC document images
+      operationId: uploadKycDocuments
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - email
+                - frontSideImage
+                - backSideImage
+              properties:
+                email:
+                  type: string
+                frontSideImage:
+                  type: string
+                  format: binary
+                backSideImage:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: KYC uploaded successfully
+        '500':
+          description: KYC upload failed, please retry
+
+  /auth/login:
+    post:
+      summary: Login user
+      operationId: userLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+                      email:
+                        type: string
+                      username:
+                        type: string
+                      currentBalance:
+                        type: number
+                        format: double
+        '401':
+          description: Incorrect username or password
+
+  /personal-banking/users/set-pin:
+    post:
+      summary: Set user PIN
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pin]
+              properties:
+                pin:
+                  type: string
+      responses:
+        '200':
+          description: PIN set successfully
+        '401':
+          description: Incorrect credentials
+
+  /personal-banking/users/agree-policy:
+    post:
+      summary: Agree to policy
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                policyAgreement:
+                  type: boolean
+      responses:
+        '200':
+          description: Policy agreement successful
+        '401':
+          description: Incorrect credentials
+
+  /personal-banking/users/me:
+    get:
+      summary: Get current user details
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User details retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/UserData'
+
+  /personal-banking/users/nicknames:
+    get:
+      summary: Get user nickname list
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Nicknames retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      nicknameOptions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            toAccountDetail:
+                              $ref: '#/components/schemas/AccountDetail'
+
+  /personal-banking/users/from-accounts:
+    get:
+      summary: Get user's from accounts
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: From accounts retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      fromAccountsOptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AccountDetail'
+
+  /personal-banking/users/recent-transfer-list:
+    get:
+      summary: Get recent transfer list
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Recent transfers retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      recentTransferListOptions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            user:
+                              $ref: '#/components/schemas/UserSummary'
+                            account:
+                              $ref: '#/components/schemas/AccountDetail'
+
+  /personal-banking/users/prepare-transaction/{accountId}:
+    post:
+      summary: Prepare a transaction
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromAccountId:
+                  type: integer
+                toAccountId:
+                  type: integer
+      responses:
+        '200':
+          description: Transaction prepared successfully
+
+  /personal-banking/transfer/to-account-number/prepare:
+    post:
+      summary: Prepare transfer by account number
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                toAccountNumber:
+                  type: string
+      responses:
+        '200':
+          description: Transfer prepared successfully
+
+  /personal-banking/transfer/nickname/prepare:
+    post:
+      summary: Prepare transfer by nickname
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nicknameId:
+                  type: integer
+      responses:
+        '200':
+          description: Transfer prepared successfully
+
+  /personal-banking/transfer/validate:
+    post:
+      summary: Validate transfer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromAccountId:
+                  type: integer
+                toAccountId:
+                  type: integer
+      responses:
+        '200':
+          description: Transfer validated successfully
+
+  /personal-banking/transfer/confirm:
+    post:
+      summary: Confirm transfer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromAccountId:
+                  type: integer
+                toAccountId:
+                  type: integer
+                amount:
+                  type: number
+                  format: double
+                note:
+                  type: string
+                pin:
+                  type: string
+      responses:
+        '200':
+          description: Transfer confirmed
+        '400':
+          description: Insufficient balance or incorrect PIN
+
+  /personal-banking/users/transactions:
+    get:
+      summary: Get user transactions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Transactions retrieved
+
+  /personal-banking/transfer/scan:
+    post:
+      summary: Scan account number for transfer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accountNumber:
+                  type: string
+      responses:
+        '200':
+          description: Scan successful
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AccountDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        accountNumber:
+          type: string
+        balance:
+          type: number
+          format: double
+    UserData:
+      type: object
+      properties:
+        email:
+          type: string
+        username:
+          type: string
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        currentBalance:
+          type: number
+          format: double
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
