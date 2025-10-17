@@ -1,0 +1,34 @@
+services:
+  app:
+    build: .
+    ports:
+      - "7777:7777"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/dummy_banking_backend_db?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: mysql
+      APP_JWT_SECRET: ${APP_JWT_SECRET}
+      APP_JWT_EXPIRATION_MS: 86400000
+    depends_on:
+      - db
+    networks:
+      - banking-network
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: dummy_banking_backend_db
+      MYSQL_ROOT_PASSWORD: mysql
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - banking-network
+
+volumes:
+  mysql-data:
+
+networks:
+  banking-network:
+    driver: bridge
