@@ -1,10 +1,23 @@
 package com.opom.bankingapp.repository;
 
-import com.opom.bankingapp.entity.User;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.opom.bankingapp.dto.auth.RegisterPersonalDetailsRequest;
+import com.opom.bankingapp.model.UserPrincipal;
+
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);
-    Optional<User> findByEmail(String email);
+public interface UserRepository {
+
+    Optional<UserPrincipal> findByUsername(String username);
+
+    Optional<UserPrincipal> findByEmail(String email);
+
+    boolean existsByEmail(String email);
+
+    long saveProfileDetail(RegisterPersonalDetailsRequest request);
+
+    long saveUser(String username, String email, String hashedPassword, long profileId, int roleId);
+
+    void saveKyc(String kycType, String kycData, long profileId);
+
+    int getRoleId(String roleType);
 }
