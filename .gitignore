@@ -1,3 +1,10 @@
 target
 .idea
 .env
+### Eclipse ###
+.project
+.classpath
+.settings/
+.metadata/
+bin/
+tmp/
