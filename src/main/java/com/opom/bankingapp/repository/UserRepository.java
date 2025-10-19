@@ -20,4 +20,8 @@ public interface UserRepository {
     void saveKyc(String kycType, String kycData, long profileId);
 
     int getRoleId(String roleType);
+
+    void updatePin(Long userId, String hashedPin);
+    void updatePolicyAgreement(Long userId, boolean agreement);
+    Optional<String> findFullNameByUserId(Long userId);
 }

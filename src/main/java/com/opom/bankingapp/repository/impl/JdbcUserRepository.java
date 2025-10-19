@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,13 +33,14 @@ public class JdbcUserRepository implements UserRepository {
                 rs.getLong("id"),
                 rs.getString("username"),
                 rs.getString("password"),
-                rs.getString("role_type")
+                rs.getString("role_type"),
+                rs.getString("email")
             );
         }
     }
 
     private Optional<UserPrincipal> findUserBy(String field, String value) {
-        String sql = "SELECT u.id, u.username, u.password, r.role_type " +
+        String sql = "SELECT u.id, u.username, u.email, u.password, r.role_type " +
                      "FROM Users u " +
                      "JOIN Role r ON u.role_id = r.id " +
                      "WHERE u." + field + " = ?";
@@ -117,6 +119,39 @@ public class JdbcUserRepository implements UserRepository {
              return jdbcTemplate.queryForObject(sql, Integer.class, roleType);
         } catch (EmptyResultDataAccessException e) {
             throw new RuntimeException("Role not found: " + roleType);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updatePin(Long userId, String hashedPin) {
+        String sql = "UPDATE Profile_detail pd " +
+                "JOIN Users u ON u.profile_id = pd.id " +
+                "SET pd.pin = ? " +
+                "WHERE u.id = ?";
+        jdbcTemplate.update(sql, hashedPin, userId);
+    }
+
+    @Override
+    @Transactional
+    public void updatePolicyAgreement(Long userId, boolean agreement) {
+        String sql = "UPDATE Profile_detail pd " +
+                "JOIN Users u ON u.profile_id = pd.id " +
+                "SET pd.is_policy_agreement = ? " +
+                "WHERE u.id = ?";
+        jdbcTemplate.update(sql, agreement, userId);
+    }
+
+    @Override
+    public Optional<String> findFullNameByUserId(Long userId) {
+        String sql = "SELECT pd.fullname FROM Profile_detail pd " +
+                "JOIN Users u ON u.profile_id = pd.id " +
+                "WHERE u.id = ?";
+        try {
+            String name = jdbcTemplate.queryForObject(sql, String.class, userId);
+            return Optional.ofNullable(name);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
         }
     }
 }

@@ -73,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.saveUser(username, request.email(), hashedPassword, profileId, roleId);
 
-        UserPrincipal userPrincipal = new UserPrincipal(-1L, username, hashedPassword, "CUSTOMER");
+        UserPrincipal userPrincipal = new UserPrincipal(-1L, username, hashedPassword, "CUSTOMER", request.email());
         String jwtToken = jwtService.generateToken(userPrincipal);
         
         System.out.println("---- DEMO: User created ----");
@@ -90,21 +90,19 @@ public class AuthServiceImpl implements AuthService {
             new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
 
-        var user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new RuntimeException("User not found after authentication"));
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
-        String jwtToken = jwtService.generateToken(user);
+        String jwtToken = jwtService.generateToken(userPrincipal);
 
-        double balance = accountRepository.findBalanceByUserId(user.getId())
-                                          .orElse(0.0);
+        double balance = accountRepository.findBalanceByUserId(userPrincipal.getId())
+                .orElse(0.0);
 
-        Optional<UserPrincipal> userOpt = userRepository.findByUsername(user.getUsername());
-        return userOpt.map(principal -> new AuthResponse(
+        return new AuthResponse(
                 jwtToken,
                 null,
-                principal.getUsername(),
-                user.getUsername(),
+                userPrincipal.getEmail(),
+                userPrincipal.getUsername(),
                 balance
-        )).orElse(null);
+        );
     }
 }

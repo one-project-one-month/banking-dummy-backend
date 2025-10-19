@@ -1,5 +1,6 @@
 package com.opom.bankingapp.model;
 
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -7,27 +8,25 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+@Getter
 public class UserPrincipal implements UserDetails {
 
     private final Long id;
     private final String username;
     private final String password;
     private final String role;
+    private final String email;
 
-    public UserPrincipal(Long id, String username, String password, String role) {
+    public UserPrincipal(Long id, String username, String password, String role, String email) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.role = role;
-    }
-
-    public Long getId() {
-        return id;
+        this.email = email;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Use "ROLE_" prefix for Spring Security
         return List.of(new SimpleGrantedAuthority("ROLE_" + this.role));
     }
 
