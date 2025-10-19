@@ -75,7 +75,6 @@ public class AuthServiceImpl implements AuthService {
 
         UserPrincipal userPrincipal = new UserPrincipal(-1L, username, hashedPassword, "CUSTOMER");
         String jwtToken = jwtService.generateToken(userPrincipal);
-
         
         System.out.println("---- DEMO: User created ----");
         System.out.println("Username: " + username);
@@ -90,8 +89,6 @@ public class AuthServiceImpl implements AuthService {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
-
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
         var user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new RuntimeException("User not found after authentication"));
