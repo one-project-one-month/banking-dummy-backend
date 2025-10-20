@@ -28,4 +28,6 @@ public interface UserRepository {
     Optional<String> findHashedPasswordById(Long userId);
     Optional<String> findHashedPinById(Long userId);
     void updatePassword(Long userId, String newHashedPassword);
+    void updateSelectedAccount(Long userId, int accountId);
+    Optional<Integer> findSelectedAccountIdByUserId(Long userId);
 }

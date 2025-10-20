@@ -14,4 +14,5 @@ public interface UserService {
     void setAutoSaveReceipt(Long userId, boolean flag);
     void changePassword(Long userId, String oldPassword, String newPassword);
     void verifyPin(Long userId, String oldPin);
+    void switchAccount(Long userId, int accountId);
 }

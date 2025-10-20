@@ -47,6 +47,16 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateToken(String subject, long expirationMs) {
+        return Jwts.builder()
+                .setClaims(new HashMap<>())
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
