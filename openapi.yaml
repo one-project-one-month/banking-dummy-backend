@@ -10,6 +10,10 @@ servers:
   - url: http://localhost:8080/api/v1/
     description: Local API Server
 
+tags:
+  - name: oct 19 confirm
+    description: Routes added or modified on October 19
+
 paths:
   /auth/register/personal-details/template:
     get:
@@ -216,6 +220,7 @@ paths:
   /personal-banking/users/me:
     get:
       summary: Get current user details
+      tags: ['oct 19 confirm'] # --- MODIFIED ---
       security:
         - bearerAuth: []
       responses:
@@ -231,11 +236,12 @@ paths:
                   message:
                     type: string
                   data:
-                    $ref: '#/components/schemas/UserData'
+                    $ref: '#/components/schemas/NewUserData' # --- MODIFIED ---
 
   /personal-banking/users/nicknames:
     get:
       summary: Get user nickname list
+      tags: ['oct 19 confirm'] # --- MODIFIED ---
       security:
         - bearerAuth: []
       responses:
@@ -252,12 +258,53 @@ paths:
                       nicknameOptions:
                         type: array
                         items:
-                          type: object
-                          properties:
-                            id:
-                              type: integer
-                            toAccountDetail:
-                              $ref: '#/components/schemas/AccountDetail'
+                          $ref: '#/components/schemas/NicknameDetail' # --- MODIFIED ---
+    post:
+      summary: Add a new nickname
+      tags: ['oct 19 confirm'] # --- NEW ---
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                toAccount:
+                  type: string
+                  description: Account number to nickname
+                nickname:
+                  type: string
+      responses:
+        '200':
+          description: Nickname added successfully
+        '401':
+          description: Unauthorized
+    put:
+      summary: Update an existing nickname
+      tags: ['oct 19 confirm'] # --- NEW ---
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                toAccount:
+                  type: string
+                  description: Account number to update
+                nickname:
+                  type: string
+      responses:
+        '200':
+          description: Nickname updated successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Nickname not found
 
   /personal-banking/users/from-accounts:
     get:
@@ -442,6 +489,284 @@ paths:
         '200':
           description: Scan successful
 
+  # --- NEW ROUTES START HERE ---
+
+  /personal-banking/users/autoSaveRecepit:
+    put:
+      summary: Set auto-save receipt preference
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: flag
+          in: query
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Preference updated
+        '401':
+          description: Unauthorized
+
+  /personal-banking/users/change-password:
+    post:
+      summary: Change user password
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                oldPassword:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        '200':
+          description: Password changed successfully
+        '401':
+          description: Unauthorized or incorrect old password
+
+  /personal-banking/users/verify-pin:
+    post:
+      summary: Verify user PIN
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                oldPin:
+                  type: string
+      responses:
+        '200':
+          description: PIN verified
+        '401':
+          description: Unauthorized or incorrect PIN
+
+  /personal-banking/users/verify-kyc:
+    post:
+      summary: Verify KYC for existing user
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                frontSideImage:
+                  type: string
+                  format: binary
+                backSideImage:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: KYC verification submitted
+        '401':
+          description: Unauthorized
+
+  /media/upload:
+    post:
+      summary: Upload a media file
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                mediaType:
+                  type: integer
+                  description: "1: userprofile, 2: kyc, 3: payroll excel"
+                profileImage:
+                  type: string
+                  format: binary
+                frontSideImage:
+                  type: string
+                  format: binary
+                backSideImage:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: File uploaded successfully
+        '401':
+          description: Unauthorized
+
+  /personal-banking/scan/qr/generate:
+    post:
+      summary: Generate a QR token for payment
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  format: double
+                note:
+                  type: string
+      responses:
+        '200':
+          description: QR token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+        '401':
+          description: Unauthorized
+
+  /personal-banking/scan/qr/verify:
+    post:
+      summary: Verify a scanned QR token
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          description: Token verified
+        '401':
+          description: Unauthorized
+
+  /personal-banking/scan/qr/transfer:
+    post:
+      summary: Complete a QR transfer
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pin:
+                  type: string
+                token:
+                  type: string
+      responses:
+        '200':
+          description: QR transfer successful
+        '401':
+          description: Unauthorized or incorrect PIN
+
+  /personal-banking/qr/scan-to-receive/generate:
+    post:
+      summary: Generate a scan-to-receive token
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: "From Account ID Token"
+      responses:
+        '200':
+          description: Token generated
+        '401':
+          description: Unauthorized
+
+  /personal-banking/qr/scan-to-receive:
+    post:
+      summary: Initiate scan-to-receive transfer
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  format: double
+                note:
+                  type: string
+                token:
+                  type: string
+                  description: "From Account ID Token"
+      responses:
+        '200':
+          description: Transfer initiated, awaiting confirmation
+        '401':
+          description: Unauthorized
+
+  /sse/scan/qr/verify-to-pay:
+    get:
+      summary: SSE endpoint to verify scan event
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Event stream established. Catches verifyScanEvent.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                example: "data: {\"toAccountDetails\": {...}, \"amount\": 10.50, \"note\": \"Coffee\"}\n\n"
+        '401':
+          description: Unauthorized
+
+  /bankAdmin/organizations:
+    get:
+      summary: Get organizations (Bank Admin)
+      tags: ['oct 19 confirm']
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of organizations
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (not an admin)
+
 components:
   securitySchemes:
     bearerAuth:
@@ -481,3 +806,80 @@ components:
           type: integer
         name:
           type: string
+
+    # --- NEW SCHEMAS START HERE ---
+
+    Gender:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Nationality:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Relationship:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    UserInfo:
+      type: object
+      properties:
+        fullname:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        dateOfBirth:
+          type: string
+        gender:
+          $ref: '#/components/schemas/Gender'
+        nationality:
+          $ref: '#/components/schemas/Nationality'
+        phoneNumber:
+          type: string
+        relationship:
+          $ref: '#/components/schemas/Relationship'
+        address:
+          type: string
+    UserAccountDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        accountNumber:
+          type: string
+        currentBalance:
+          type: number
+          format: double
+    NewUserData:
+      type: object
+      description: Schema for the /personal-banking/users/me response
+      properties:
+        info:
+          $ref: '#/components/schemas/UserInfo'
+        accountDetails:
+          $ref: '#/components/schemas/UserAccountDetail'
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+    NicknameDetail:
+      type: object
+      description: Schema for an item in the nicknameOptions array
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        toAccountDetail:
+          $ref: '#/components/schemas/AccountDetail'

@@ -154,4 +154,45 @@ public class JdbcUserRepository implements UserRepository {
             return Optional.empty();
         }
     }
+
+    @Override
+    @Transactional
+    public void updateAutoSaveReceipt(Long userId, boolean flag) {
+        String sql = "UPDATE Profile_detail pd " +
+                "JOIN Users u ON u.profile_id = pd.id " +
+                "SET pd.is_auto_save_receipt = ? " +
+                "WHERE u.id = ?";
+        jdbcTemplate.update(sql, flag, userId);
+    }
+
+    @Override
+    public Optional<String> findHashedPasswordById(Long userId) {
+        String sql = "SELECT password FROM Users WHERE id = ?";
+        try {
+            String password = jdbcTemplate.queryForObject(sql, String.class, userId);
+            return Optional.ofNullable(password);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<String> findHashedPinById(Long userId) {
+        String sql = "SELECT pd.pin FROM Profile_detail pd " +
+                "JOIN Users u ON u.profile_id = pd.id " +
+                "WHERE u.id = ?";
+        try {
+            String pin = jdbcTemplate.queryForObject(sql, String.class, userId);
+            return Optional.ofNullable(pin);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updatePassword(Long userId, String newHashedPassword) {
+        String sql = "UPDATE Users SET password = ? WHERE id = ?";
+        jdbcTemplate.update(sql, newHashedPassword, userId);
+    }
 }
