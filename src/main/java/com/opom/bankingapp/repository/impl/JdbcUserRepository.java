@@ -195,4 +195,27 @@ public class JdbcUserRepository implements UserRepository {
         String sql = "UPDATE Users SET password = ? WHERE id = ?";
         jdbcTemplate.update(sql, newHashedPassword, userId);
     }
+
+    @Override
+    @Transactional
+    public void updateSelectedAccount(Long userId, int accountId) {
+        String sql = "UPDATE Profile_detail pd " +
+                "JOIN Users u ON u.profile_id = pd.id " +
+                "SET pd.selected_account_id = ? " +
+                "WHERE u.id = ?";
+        jdbcTemplate.update(sql, accountId, userId);
+    }
+
+    @Override
+    public Optional<Integer> findSelectedAccountIdByUserId(Long userId) {
+        String sql = "SELECT pd.selected_account_id FROM Profile_detail pd " +
+                "JOIN Users u ON u.profile_id = pd.id " +
+                "WHERE u.id = ?";
+        try {
+            Integer accountId = jdbcTemplate.queryForObject(sql, Integer.class, userId);
+            return Optional.ofNullable(accountId);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
 }

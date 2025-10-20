@@ -111,4 +111,16 @@ public class UserController {
                 new ApiResponse<>(HttpStatus.OK.value(), "PIN verified", null)
         );
     }
+
+    @PostMapping("/switch-account")
+    public ResponseEntity<ApiResponse<String>> switchAccount(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestBody SwitchAccountRequest request) {
+
+        userService.switchAccount(user.getId(), request.accountId());
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "Account switched successfully", null)
+        );
+    }
 }

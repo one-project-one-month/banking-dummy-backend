@@ -97,4 +97,18 @@ public class UserServiceImpl implements UserService {
             throw new BadCredentialsException("Incorrect PIN");
         }
     }
+
+    @Override
+    @Transactional
+    public void switchAccount(Long userId, int accountId) {
+        boolean accountMatchesUser = accountRepository.findAccountsByUserId(userId)
+                .stream()
+                .anyMatch(acc -> acc.id() == accountId);
+
+        if (!accountMatchesUser) {
+            throw new BadCredentialsException("Account not found or does not belong to user");
+        }
+
+        userRepository.updateSelectedAccount(userId, accountId);
+    }
 }
