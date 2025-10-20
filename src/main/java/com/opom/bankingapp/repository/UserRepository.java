@@ -24,4 +24,8 @@ public interface UserRepository {
     void updatePin(Long userId, String hashedPin);
     void updatePolicyAgreement(Long userId, boolean agreement);
     Optional<String> findFullNameByUserId(Long userId);
+    void updateAutoSaveReceipt(Long userId, boolean flag);
+    Optional<String> findHashedPasswordById(Long userId);
+    Optional<String> findHashedPinById(Long userId);
+    void updatePassword(Long userId, String newHashedPassword);
 }

@@ -11,4 +11,7 @@ public interface UserService {
     UserDetailsResponse getUserDetails(UserPrincipal user);
     FromAccountsResponse getFromAccounts(Long userId);
     RecentTransferListResponse getRecentTransfers(Long userId);
+    void setAutoSaveReceipt(Long userId, boolean flag);
+    void changePassword(Long userId, String oldPassword, String newPassword);
+    void verifyPin(Long userId, String oldPin);
 }

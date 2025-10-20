@@ -8,6 +8,7 @@ import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.repository.AccountRepository;
 import com.opom.bankingapp.repository.TransactionRepository;
 import com.opom.bankingapp.repository.UserRepository;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,5 +65,36 @@ public class UserServiceImpl implements UserService {
     public RecentTransferListResponse getRecentTransfers(Long userId) {
         var transfers = transactionRepository.findRecentTransfersByUserId(userId);
         return new RecentTransferListResponse(transfers);
+    }
+
+    @Override
+    @Transactional
+    public void setAutoSaveReceipt(Long userId, boolean flag) {
+        userRepository.updateAutoSaveReceipt(userId, flag);
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        String currentHashedPassword = userRepository.findHashedPasswordById(userId)
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
+
+        if (!passwordEncoder.matches(oldPassword, currentHashedPassword)) {
+            throw new BadCredentialsException("Incorrect old password");
+        }
+
+        String newHashedPassword = passwordEncoder.encode(newPassword);
+        userRepository.updatePassword(userId, newHashedPassword);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void verifyPin(Long userId, String oldPin) {
+        String currentHashedPin = userRepository.findHashedPinById(userId)
+                .orElseThrow(() -> new BadCredentialsException("PIN not set or user not found"));
+
+        if (!passwordEncoder.matches(oldPin, currentHashedPin)) {
+            throw new BadCredentialsException("Incorrect PIN");
+        }
     }
 }

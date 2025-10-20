@@ -75,4 +75,40 @@ public class UserController {
                 new ApiResponse<>(HttpStatus.OK.value(), "Recent transfers retrieved", responseData)
         );
     }
+
+    @PutMapping("/autoSaveRecepit")
+    public ResponseEntity<ApiResponse<String>> setAutoSaveReceipt(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam("flag") boolean flag) {
+
+        userService.setAutoSaveReceipt(user.getId(), flag);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "Preference updated", null)
+        );
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<String>> changePassword(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestBody ChangePasswordRequest request) {
+
+        userService.changePassword(user.getId(), request.oldPassword(), request.newPassword());
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "Password changed successfully", null)
+        );
+    }
+
+    @PostMapping("/verify-pin")
+    public ResponseEntity<ApiResponse<String>> verifyPin(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestBody VerifyPinRequest request) {
+
+        userService.verifyPin(user.getId(), request.oldPin());
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "PIN verified", null)
+        );
+    }
 }
