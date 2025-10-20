@@ -2,8 +2,8 @@ server:
   port: ${SERVER_PORT:7777}
 
 spring:
-  profiles:
-    active: dev
+  # profiles:
+    # active: dev
   datasource:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?createDatabaseIfNotExist=true
     username: ${MYSQL_USER}
