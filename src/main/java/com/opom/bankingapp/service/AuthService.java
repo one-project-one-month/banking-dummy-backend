@@ -9,4 +9,5 @@ public interface AuthService {
     PersonalDetailsTemplateResponse getPersonalDetailsTemplate();
     AuthResponse registerPersonalDetails(RegisterPersonalDetailsRequest request);
     AuthResponse login(LoginRequest request);
+    AuthResponse refreshToken(String authHeader);
 }

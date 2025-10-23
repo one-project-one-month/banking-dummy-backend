@@ -23,6 +23,7 @@ app:
   jwt:
     secret: ${APP_JWT_SECRET}
     expiration-ms: ${APP_JWT_EXPIRATION_MS}
+    refresh-expiration-ms: 604800000
   cors:
     allowed-origins: http://localhost:5173,https://user-banking-app-frontend.vercel.app,https://corporate-banking-app-frontend.vercel.app
 

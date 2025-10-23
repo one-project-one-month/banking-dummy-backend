@@ -13,8 +13,10 @@ import com.opom.bankingapp.repository.UserRepository;
 import com.opom.bankingapp.service.AuthService;
 import com.opom.bankingapp.service.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,5 +106,41 @@ public class AuthServiceImpl implements AuthService {
                 userPrincipal.getUsername(),
                 balance
         );
+    }
+
+    @Override
+    public AuthResponse refreshToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new BadCredentialsException("Invalid refresh token request");
+        }
+
+        final String refreshToken = authHeader.substring(7);
+        final String username;
+        try {
+            username = jwtService.extractUsername(refreshToken);
+        } catch (Exception e) {
+            throw new BadCredentialsException("Invalid refresh token");
+        }
+
+        if (username != null) {
+            UserPrincipal userPrincipal = this.userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            if (jwtService.isTokenValid(refreshToken, userPrincipal)) {
+                String newAccessToken = jwtService.generateToken(userPrincipal);
+
+                double balance = accountRepository.findBalanceByUserId(userPrincipal.getId())
+                        .orElse(0.0);
+
+                return new AuthResponse(
+                        newAccessToken,
+                        refreshToken,
+                        userPrincipal.getEmail(),
+                        userPrincipal.getUsername(),
+                        balance
+                );
+            }
+        }
+        throw new BadCredentialsException("Invalid refresh token");
     }
 }

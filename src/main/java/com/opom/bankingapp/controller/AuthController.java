@@ -51,4 +51,18 @@ public class AuthController {
         );
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
+            @RequestHeader("Authorization") String authHeader) {
+
+        AuthResponse authData = authService.refreshToken(authHeader);
+
+        ApiResponse<AuthResponse> response = new ApiResponse<>(
+                HttpStatus.OK.value(),
+                "Access token refreshed successfully",
+                authData
+        );
+        return ResponseEntity.ok(response);
+    }
 }
