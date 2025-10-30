@@ -323,3 +323,17 @@ INSERT INTO Faq (question, answer, faq_category_id) VALUES
 ('OTP မရဘူးဆိုရင် ဘယ်လိုလုပ်ရမလဲ။',
  'မိမိဖုန်းနံပါတ်အသက်ဝင်နေကြောင်း၊ short code မှ SMS မတားထားကြောင်း စစ်ဆေးပါ။ မရပါက စက္ကန့် ၃၀ ကြာပြီးနောက် OTP ကို ပြန်တောင်းနိုင်ပါတယ်။',
  5);
+
+DROP TABLE IF EXISTS Organization;
+
+CREATE TABLE Organization (
+                              id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                              name VARCHAR(255) NOT NULL,
+                              shortcode VARCHAR(50) UNIQUE,
+                              address VARCHAR(255) NOT NULL,
+                              country VARCHAR(255) NOT NULL,
+                              created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                              updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+                              created_by BIGINT NULL,
+                              updated_by BIGINT NULL
+);
