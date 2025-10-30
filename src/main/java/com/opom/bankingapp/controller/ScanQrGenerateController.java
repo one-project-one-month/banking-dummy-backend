@@ -20,14 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/personal-banking/scan")
-public class QrController {
+public class ScanQrGenerateController {
 
     private final QrService qrService;
-    private final TransactionService transactionService;
 
-    public QrController(QrService qrService, TransactionService transactionService) {
+    public ScanQrGenerateController(QrService qrService) {
         this.qrService = qrService;
-        this.transactionService = transactionService;
     }
 
     @PostMapping("/qr-to-receive/generate")
@@ -51,18 +49,6 @@ public class QrController {
 
         return ResponseEntity.ok(
                 new ApiResponse<>(HttpStatus.OK.value(), "Scan-to-receive token generated", responseData)
-        );
-    }
-
-    @PostMapping("/qr-to-pay/transfer")
-    public ResponseEntity<ApiResponse<String>> scanToPayTransfer(
-            @AuthenticationPrincipal UserPrincipal user,
-            @RequestBody ScanToPayRequest request) {
-
-        transactionService.executeScanToPay(user.getId(), request);
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(HttpStatus.OK.value(), "Transfer successful", null)
         );
     }
 }

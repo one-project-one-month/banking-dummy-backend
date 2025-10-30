@@ -1,17 +1,17 @@
 package com.opom.bankingapp.service.impl;
 
-import com.opom.bankingapp.dto.auth.AuthResponse;
-import com.opom.bankingapp.dto.auth.LoginRequest;
-import com.opom.bankingapp.dto.auth.PersonalDetailsTemplateResponse;
-import com.opom.bankingapp.dto.auth.RegisterPersonalDetailsRequest;
+import com.opom.bankingapp.dto.auth.*;
 import com.opom.bankingapp.dto.common.OptionDto;
 import com.opom.bankingapp.exception.EmailAlreadyExistsException;
 import com.opom.bankingapp.model.UserPrincipal;
+import com.opom.bankingapp.model.UserStatus;
 import com.opom.bankingapp.repository.AccountRepository;
 import com.opom.bankingapp.repository.CommonRepository;
 import com.opom.bankingapp.repository.UserRepository;
 import com.opom.bankingapp.service.AuthService;
+import com.opom.bankingapp.service.EmailService;
 import com.opom.bankingapp.service.JwtService;
+import com.opom.bankingapp.service.TokenService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,11 +22,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+
+    private static final Map<String, String> OTP_STORE = new ConcurrentHashMap<>();
+    private static final long EMAIL_VERIFICATION_TOKEN_EXPIRATION_MS = 300000L;
 
     private final CommonRepository commonRepository;
     private final UserRepository userRepository;
@@ -34,19 +39,25 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
+    private final EmailService emailService;
 
     public AuthServiceImpl(CommonRepository commonRepository,
                            UserRepository userRepository,
                            AccountRepository accountRepository,
                            PasswordEncoder passwordEncoder,
                            JwtService jwtService,
-                           AuthenticationManager authenticationManager) {
+                           AuthenticationManager authenticationManager,
+                           TokenService tokenService,
+                           EmailService emailService) {
         this.commonRepository = commonRepository;
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.tokenService = tokenService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -57,25 +68,62 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public void verifyEmail(EmailVerificationRequest request) {
+        String email = request.email();
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyExistsException("Email is already taken: " + email);
+        }
+
+        String generatedOtp = "123456";
+        OTP_STORE.put(email, generatedOtp);
+        emailService.sendOtpEmail(email, generatedOtp);
+    }
+
+    @Override
+    public OtpVerificationResponse verifyOtp(OtpVerificationRequest request) {
+        String email = request.email();
+        String otp = request.otp();
+
+        String expectedOtp = OTP_STORE.get(email);
+
+        if (expectedOtp == null || !expectedOtp.equals(otp)) {
+            throw new BadCredentialsException("Invalid or expired OTP");
+        }
+
+        OTP_STORE.remove(email);
+
+        EmailTokenPayload payload = new EmailTokenPayload(email);
+        String verificationToken = tokenService.encode(payload, EMAIL_VERIFICATION_TOKEN_EXPIRATION_MS);
+
+        return new OtpVerificationResponse(verificationToken);
+    }
+
+    @Override
     @Transactional
     public AuthResponse registerPersonalDetails(RegisterPersonalDetailsRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new EmailAlreadyExistsException("Email is already taken: " + request.email());
+        EmailTokenPayload payload = tokenService.decode(request.verificationToken(), EmailTokenPayload.class)
+                .orElseThrow(() -> new BadCredentialsException("Invalid or expired verification token"));
+
+        String email = payload.email();
+
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyExistsException("Email is already taken: " + email);
         }
 
         long profileId = userRepository.saveProfileDetail(request);
 
         userRepository.saveKyc(request.kycType(), request.kycData(), profileId);
 
-        String username = request.email().split("@")[0];
+        String username = email.split("@")[0];
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         String hashedPassword = passwordEncoder.encode(rawPassword);
 
-        int roleId = userRepository.getRoleId("CUSTOMER"); 
+        int roleId = userRepository.getRoleId("CUSTOMER");
+        int statusId = UserStatus.PENDING.getCode();
 
-        userRepository.saveUser(username, request.email(), hashedPassword, profileId, roleId);
+        userRepository.saveUser(username, email, hashedPassword, profileId, roleId, statusId);
 
-        UserPrincipal userPrincipal = new UserPrincipal(-1L, username, hashedPassword, "CUSTOMER", request.email());
+        UserPrincipal userPrincipal = new UserPrincipal(-1L, username, hashedPassword, "CUSTOMER", email);
         String jwtToken = jwtService.generateToken(userPrincipal);
         
         System.out.println("---- DEMO: User created ----");
@@ -83,7 +131,7 @@ public class AuthServiceImpl implements AuthService {
         System.out.println("Password: " + rawPassword + " (This is a demo password)");
         System.out.println("-----------------------------");
 
-        return new AuthResponse(jwtToken, null, request.email(), username, 0.0);
+        return new AuthResponse(jwtToken, null, email, username, 0.0);
     }
 
     @Override
