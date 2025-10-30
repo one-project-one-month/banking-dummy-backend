@@ -15,7 +15,7 @@ public interface UserRepository {
 
     long saveProfileDetail(RegisterPersonalDetailsRequest request);
 
-    long saveUser(String username, String email, String hashedPassword, long profileId, int roleId);
+    long saveUser(String username, String email, String hashedPassword, long profileId, int roleId, int statusId);
 
     void saveKyc(String kycType, String kycData, long profileId);
 

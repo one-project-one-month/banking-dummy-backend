@@ -1,4 +1,4 @@
-package com.opom.bankingapp.controller;
+package com.opom.bankingapp.controller.personalbanking;
 
 import com.opom.bankingapp.dto.common.ApiResponse;
 import com.opom.bankingapp.dto.user.*;
@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/personal-banking/users")
-public class UserController {
+public class PersonalBankingUserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
+    public PersonalBankingUserController(UserService userService) {
         this.userService = userService;
     }
 

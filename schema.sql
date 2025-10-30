@@ -117,6 +117,7 @@ CREATE TABLE Users (
                        password VARCHAR(255) NOT NULL,
                        profile_id INT,
                        role_id INT,
+                       status INT DEFAULT 1,
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                        created_by INT NULL,
@@ -199,3 +200,126 @@ INSERT INTO Role (role_type, name, created_by, updated_by)
 VALUES
     ('CUSTOMER', 'Customer Role', 1, 1),
     ('ADMIN', 'Admin Role', 1, 1);
+
+-- Tables for Bank Admin
+DROP TABLE IF EXISTS Faq;
+DROP TABLE IF EXISTS Faq_category;
+
+CREATE TABLE IF NOT EXISTS Faq_category (
+                                            id INT AUTO_INCREMENT PRIMARY KEY,
+                                            name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NULL
+    );
+
+CREATE TABLE IF NOT EXISTS Faq (
+                                   id INT AUTO_INCREMENT PRIMARY KEY,
+                                   question TEXT NOT NULL,
+                                   answer TEXT NOT NULL,
+                                   faq_category_id INT,
+                                   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NULL,
+    FOREIGN KEY (faq_category_id) REFERENCES Faq_category(id) ON DELETE SET NULL
+    );
+
+INSERT INTO Faq_category (name) VALUES
+                                    ('Account Management'),
+                                    ('Security & Privacy'),
+                                    ('Transfers & Payments'),
+                                    ('App Usage'),
+                                    ('Technical Support');
+
+
+INSERT INTO Faq (question, answer, faq_category_id) VALUES
+
+-- Account Management
+('How do I open a mobile banking account?',
+ 'You can open an account by downloading our mobile banking app and completing the registration form using your phone number, national ID, and email address.',
+ 1),
+
+('Can I have multiple accounts linked to the same app?',
+ 'Yes, you can link multiple accounts under the same profile by adding them in the “Linked Accounts” section from Settings.',
+ 1),
+
+('How do I reset my password?',
+ 'On the login screen, tap “Forgot Password”, then follow the instructions sent to your registered phone number or email to reset it.',
+ 1),
+
+-- Security & Privacy
+('Is mobile banking safe to use?',
+ 'Yes. Our app uses end-to-end encryption and multi-factor authentication to protect your data and transactions.',
+ 2),
+
+('What should I do if I suspect fraudulent activity?',
+ 'Immediately lock your account using the “Freeze Account” option in the app and contact our support center for assistance.',
+ 2),
+
+('Does the app store my card details?',
+ 'No. Your card details are encrypted and securely stored in compliance with banking security standards.',
+ 2),
+
+-- Transfers & Payments
+('How do I transfer money to another bank account?',
+ 'Go to “Transfers” → “External Transfer”, enter the recipient’s bank details, and confirm with your PIN or biometric authentication.',
+ 3),
+
+('Is there a transfer limit?',
+ 'Yes, daily transfer limits depend on your account type. You can view or request an increase in the “Limits” section under Settings.',
+ 3),
+
+('Can I schedule recurring payments?',
+ 'Yes, you can set up recurring payments from the “Scheduled Transfers” option for bills, rent, or subscriptions.',
+ 3),
+
+-- App Usage
+('Does the app work without internet?',
+ 'No, you need an active internet connection to use mobile banking services.',
+ 4),
+
+('How do I update the app?',
+ 'Visit the Google Play Store or Apple App Store, search for our app, and tap “Update”.',
+ 4),
+
+('Can I use the app on multiple devices?',
+ 'Yes, but you must verify each device using OTP authentication during login.',
+ 4),
+
+-- Technical Support
+('What should I do if the app crashes?',
+ 'Try restarting your device and updating the app to the latest version. If the problem persists, contact customer support.',
+ 5),
+
+('Why am I not receiving OTPs?',
+ 'Ensure your phone number is active and not blocking SMS messages from short codes. You can also resend OTP after 30 seconds.',
+ 5),
+
+('How can I contact customer support?',
+ 'You can reach us via in-app chat, call our hotline, or email support@mobilebank.com for assistance.',
+ 5);
+
+INSERT INTO Faq (question, answer, faq_category_id) VALUES
+
+-- Account Management
+('မိုဘိုင်းဘဏ်အကောင့်ကို ဘယ်လိုဖွင့်ရမလဲ။',
+ 'မိုဘိုင်းဘဏ်အက်ပ်ကို ဒေါင်းလုဒ်လုပ်ပြီး မိမိဖုန်းနံပါတ်၊ အမျိုးသားမှတ်ပုံတင်နံပါတ်နဲ့ အီးမေးလ်ဖြင့် မှတ်ပုံတင်ဖောင်ဖြည့်ခြင်းဖြင့် အကောင့်ဖွင့်နိုင်ပါတယ်။',
+ 1),
+
+-- Security & Privacy
+('လိမ်လည်မှုရှိတယ်လို့ သံသယရှိရင် ဘာလုပ်သင့်လဲ။',
+ 'အက်ပ်ထဲရှိ “Freeze Account” ဆိုတဲ့ရွေးချယ်မှုကို အသုံးပြုပြီး မိမိအကောင့်ကို ချက်ချင်းပိတ်ပါ။ ပြီးရင် ဝန်ဆောင်မှုအထောက်အပံ့ဌာနကို ဆက်သွယ်ပါ။',
+ 2),
+
+-- Transfers & Payments
+('အခြားဘဏ်အကောင့်သို့ ငွေလွှဲချင်ရင် ဘယ်လိုလုပ်ရမလဲ။',
+ '“ငွေလွှဲ” → “အပြင်ဘဏ်လွှဲမှု” ကိုနှိပ်ပြီး လက်ခံသူ၏ ဘဏ်အချက်အလက်များထည့်ပါ။ ထို့နောက် မိမိ၏ PIN သို့မဟုတ် လက်ဗွေဖြင့် အတည်ပြုပါ။',
+ 3),
+
+-- App Usage
+('အက်ပ်ကို အင်တာနက်မရှိပဲ အသုံးပြုနိုင်မလား။',
+ 'မရပါ။ မိုဘိုင်းဘဏ်ဝန်ဆောင်မှုများအသုံးပြုရန် အင်တာနက်ချိတ်ဆက်မှု လိုအပ်ပါသည်။',
+ 4),
+
+-- Technical Support
+('OTP မရဘူးဆိုရင် ဘယ်လိုလုပ်ရမလဲ။',
+ 'မိမိဖုန်းနံပါတ်အသက်ဝင်နေကြောင်း၊ short code မှ SMS မတားထားကြောင်း စစ်ဆေးပါ။ မရပါက စက္ကန့် ၃၀ ကြာပြီးနောက် OTP ကို ပြန်တောင်းနိုင်ပါတယ်။',
+ 5);

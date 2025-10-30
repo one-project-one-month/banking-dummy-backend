@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -88,9 +89,9 @@ public class JdbcUserRepository implements UserRepository {
     }
 
     @Override
-    public long saveUser(String username, String email, String hashedPassword, long profileId, int roleId) {
-        String sql = "INSERT INTO Users (username, email, password, profile_id, role_id) " +
-                     "VALUES (?, ?, ?, ?, ?)";
+    public long saveUser(String username, String email, String hashedPassword, long profileId, int roleId, int statusId) {
+        String sql = "INSERT INTO Users (username, email, password, profile_id, role_id, status) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
@@ -100,10 +101,11 @@ public class JdbcUserRepository implements UserRepository {
             ps.setString(3, hashedPassword);
             ps.setLong(4, profileId);
             ps.setInt(5, roleId);
+            ps.setInt(6, statusId);
             return ps;
         }, keyHolder);
         
-        return keyHolder.getKey().longValue();
+        return Objects.requireNonNull(keyHolder.getKey()).longValue();
     }
 
     @Override
