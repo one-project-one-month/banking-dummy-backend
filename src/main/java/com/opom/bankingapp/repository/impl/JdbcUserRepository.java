@@ -207,12 +207,12 @@ public class JdbcUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<Integer> findSelectedAccountIdByUserId(Long userId) {
+    public Optional<Long> findSelectedAccountIdByUserId(Long userId) {
         String sql = "SELECT pd.selected_account_id FROM Profile_detail pd " +
                 "JOIN Users u ON u.profile_id = pd.id " +
                 "WHERE u.id = ?";
         try {
-            Integer accountId = jdbcTemplate.queryForObject(sql, Integer.class, userId);
+            Long accountId = jdbcTemplate.queryForObject(sql, Long.class, userId);
             return Optional.ofNullable(accountId);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();

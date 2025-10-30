@@ -35,9 +35,9 @@ public class QrServiceImpl implements QrService {
     @Override
     public GenerateQrResponse generateQrToken(UserPrincipal user, GenerateQrRequest request) {
 
-        int toAccountId;
+        long toAccountId;
 
-        Optional<Integer> selectedAccountIdOpt = userRepository.findSelectedAccountIdByUserId(user.getId());
+        Optional<Long> selectedAccountIdOpt = userRepository.findSelectedAccountIdByUserId(user.getId());
 
         if (selectedAccountIdOpt.isPresent()) {
             toAccountId = selectedAccountIdOpt.get();
