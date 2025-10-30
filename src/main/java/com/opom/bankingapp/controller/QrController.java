@@ -6,8 +6,10 @@ import com.opom.bankingapp.dto.scan.GenerateFromAccountTokenRequest;
 import com.opom.bankingapp.dto.scan.GenerateQrRequest;
 import com.opom.bankingapp.dto.scan.GenerateQrResponse;
 
+import com.opom.bankingapp.dto.scan.ScanToPayRequest;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.service.QrService;
+import com.opom.bankingapp.service.TransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,9 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class QrController {
 
     private final QrService qrService;
+    private final TransactionService transactionService;
 
-    public QrController(QrService qrService) {
+    public QrController(QrService qrService, TransactionService transactionService) {
         this.qrService = qrService;
+        this.transactionService = transactionService;
     }
 
     @PostMapping("/qr-to-receive/generate")
@@ -47,6 +51,18 @@ public class QrController {
 
         return ResponseEntity.ok(
                 new ApiResponse<>(HttpStatus.OK.value(), "Scan-to-receive token generated", responseData)
+        );
+    }
+
+    @PostMapping("/qr-to-pay/transfer")
+    public ResponseEntity<ApiResponse<String>> scanToPayTransfer(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestBody ScanToPayRequest request) {
+
+        transactionService.executeScanToPay(user.getId(), request);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "Transfer successful", null)
         );
     }
 }

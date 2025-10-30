@@ -56,4 +56,10 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
         return jdbcTemplate.query(sql, new RecentTransferRowMapper(), userId);
     }
+
+    @Override
+    public void saveTransaction(Long fromAccountId, Long toAccountId, double amount, Long createdBy) {
+        String insertTxSql = "INSERT INTO Transaction (debit_account_id, credit_account_id, amount, created_by, created_at) VALUES (?, ?, ?, ?, NOW())";
+        jdbcTemplate.update(insertTxSql, fromAccountId, toAccountId, amount, createdBy);
+    }
 }
