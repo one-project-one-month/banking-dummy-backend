@@ -1,4 +1,4 @@
-package com.opom.bankingapp.controller;
+package com.opom.bankingapp.controller.personalbanking;
 
 import com.opom.bankingapp.dto.common.ApiResponse;
 import com.opom.bankingapp.dto.scan.ScanToPayRequest;

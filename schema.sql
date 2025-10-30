@@ -201,24 +201,25 @@ VALUES
     ('CUSTOMER', 'Customer Role', 1, 1),
     ('ADMIN', 'Admin Role', 1, 1);
 
---- Tables for Bank Admin
+-- Tables for Bank Admin
 DROP TABLE IF EXISTS Faq;
 DROP TABLE IF EXISTS Faq_category;
 
-CREATE TABLE IF NOT EXISTS Faq_category(
-                                           id SERIAL PRIMARY KEY,
-                                           name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL default now(),
-    updated_at TIMESTAMP
+CREATE TABLE IF NOT EXISTS Faq_category (
+                                            id INT AUTO_INCREMENT PRIMARY KEY,
+                                            name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NULL
     );
 
-CREATE TABLE IF NOT EXISTS Faq(
-                                  id SERIAL PRIMARY KEY,
-                                  question TEXT NOT NULL,
-                                  answer TEXT NOT NULL,
-                                  faq_category_id INT REFERENCES Faq_category(id) ON DELETE SET NULL,
-    created_at TIMESTAMP NOT NULL default now(),
-    updated_at TIMESTAMP
+CREATE TABLE IF NOT EXISTS Faq (
+                                   id INT AUTO_INCREMENT PRIMARY KEY,
+                                   question TEXT NOT NULL,
+                                   answer TEXT NOT NULL,
+                                   faq_category_id INT,
+                                   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NULL,
+    FOREIGN KEY (faq_category_id) REFERENCES Faq_category(id) ON DELETE SET NULL
     );
 
 INSERT INTO Faq_category (name) VALUES

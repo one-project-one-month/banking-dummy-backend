@@ -1,4 +1,4 @@
-package com.opom.bankingapp.controller;
+package com.opom.bankingapp.controller.personalbanking;
 
 import com.opom.bankingapp.dto.common.ApiResponse;
 
@@ -6,10 +6,8 @@ import com.opom.bankingapp.dto.scan.GenerateFromAccountTokenRequest;
 import com.opom.bankingapp.dto.scan.GenerateQrRequest;
 import com.opom.bankingapp.dto.scan.GenerateQrResponse;
 
-import com.opom.bankingapp.dto.scan.ScanToPayRequest;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.service.QrService;
-import com.opom.bankingapp.service.TransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

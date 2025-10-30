@@ -1,4 +1,4 @@
-package com.opom.bankingapp.controller;
+package com.opom.bankingapp.controller.auth;
 
 import com.opom.bankingapp.dto.auth.AuthResponse;
 import com.opom.bankingapp.dto.auth.LoginRequest;
