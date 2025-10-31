@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/api-docs/**",
                                 "/swagger-ui.html",
+                                "/personal-banking/scan/qr-to-pay/subscribe",
                                 "/"
                         ).permitAll()
                         .anyRequest().authenticated()
