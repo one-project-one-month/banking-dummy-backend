@@ -69,16 +69,22 @@ public class QrServiceImpl implements QrService {
     }
 
     @Override
-    public GenerateQrResponse generateFromAccountToken(UserPrincipal user, GenerateFromAccountTokenRequest request) {
+    public GenerateQrResponse generateFromAccountToken(UserPrincipal user/*, GenerateFromAccountTokenRequest request*/) {
+        Optional<Long> selectedAccountIdOpt = userRepository.findSelectedAccountIdByUserId(user.getId());
+
+        if (selectedAccountIdOpt.isEmpty()) {
+            throw new BadCredentialsException("User has no account");
+        }
+        final Long selectedAccountId = selectedAccountIdOpt.get();
         boolean accountMatchesUser = accountRepository.findAccountsByUserId(user.getId())
                 .stream()
-                .anyMatch(acc -> acc.id() == request.fromAccountId());
+                .anyMatch(acc -> acc.id() == selectedAccountId);
 
         if (!accountMatchesUser) {
             throw new BadCredentialsException("Account not found or does not belong to user");
         }
 
-        FromAccountTokenPayload payload = new FromAccountTokenPayload(request.fromAccountId());
+        FromAccountTokenPayload payload = new FromAccountTokenPayload(selectedAccountId);
         String token = tokenService.encode(payload, 86400000L); // 24 * 60 * 60 * 1000 = 86,400,000ms (1 day)
         return new GenerateQrResponse(token);
     }

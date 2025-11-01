@@ -11,7 +11,7 @@ import com.opom.bankingapp.model.UserPrincipal;
 public interface QrService {
     GenerateQrResponse generateQrToken(UserPrincipal user, GenerateQrRequest request);
 
-    GenerateQrResponse generateFromAccountToken(UserPrincipal user, GenerateFromAccountTokenRequest request);
+    GenerateQrResponse generateFromAccountToken(UserPrincipal user/*, GenerateFromAccountTokenRequest request*/);
     
     SseEmitter subscribeTopic(String topic);
 

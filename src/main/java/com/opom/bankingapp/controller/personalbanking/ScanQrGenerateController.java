@@ -42,10 +42,10 @@ public class ScanQrGenerateController {
 
     @PostMapping("/qr-to-pay/generate")
     public ResponseEntity<ApiResponse<GenerateQrResponse>> generateFromAccountToken(
-            @AuthenticationPrincipal UserPrincipal user,
-            @RequestBody GenerateFromAccountTokenRequest request) {
+            @AuthenticationPrincipal UserPrincipal user
+            /*@RequestBody GenerateFromAccountTokenRequest request*/) {
 
-        GenerateQrResponse responseData = qrService.generateFromAccountToken(user, request);
+        GenerateQrResponse responseData = qrService.generateFromAccountToken(user/*, request*/);
 
         return ResponseEntity.ok(
                 new ApiResponse<>(HttpStatus.OK.value(), "Scan-to-receive token generated", responseData)
