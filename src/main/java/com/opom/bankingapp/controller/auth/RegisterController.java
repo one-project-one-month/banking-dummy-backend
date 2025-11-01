@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+
 @RestController
 @RequestMapping("/api/auth")
 public class RegisterController {
@@ -26,12 +28,12 @@ public class RegisterController {
     public ResponseEntity<ApiResponse<String>> verifyEmail(
             @RequestBody EmailVerificationRequest request) {
 
-        authService.verifyEmail(request);
+        String generatedOtp = authService.verifyEmail(request);
 
         ApiResponse<String> response = new ApiResponse<>(
                 HttpStatus.OK.value(),
                 "OTP sent successfully",
-                null
+                generatedOtp
         );
         return ResponseEntity.ok(response);
     }

@@ -21,10 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -68,15 +65,19 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void verifyEmail(EmailVerificationRequest request) {
+    public String verifyEmail(EmailVerificationRequest request) {
         String email = request.email();
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyExistsException("Email is already taken: " + email);
         }
 
-        String generatedOtp = "123456";
+        Random random = new Random();
+        int otpNumber = 100000 + random.nextInt(900000);
+        String generatedOtp = String.valueOf(otpNumber);
+
         OTP_STORE.put(email, generatedOtp);
-        emailService.sendOtpEmail(email, generatedOtp);
+//        emailService.sendOtpEmail(email, generatedOtp);
+        return generatedOtp;
     }
 
     @Override
