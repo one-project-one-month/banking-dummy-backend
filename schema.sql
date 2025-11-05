@@ -337,3 +337,89 @@ CREATE TABLE Organization (
                               created_by BIGINT NULL,
                               updated_by BIGINT NULL
 );
+
+SET @hashed_password = '$2a$10$T.SC.OMcLRkPB8vM.A/3He.XW6A/T/rTpvY5A5Lz9.Qo8J7j68f.O';
+
+SET @customer_role_id = (SELECT id FROM Role WHERE role_type = 'CUSTOMER');
+
+INSERT INTO Profile_detail (id, fullname, date_of_birth, gender_id, nationality_id, is_policy_agreement, pin)
+VALUES (6, 'John Doe', '1990-01-15', 1, 1, TRUE, @hashed_password);
+
+INSERT INTO Users (id, username, email, password, profile_id, role_id, status)
+VALUES (6, 'john.doe', 'john.doe@example.com', @hashed_password, 6, @customer_role_id, 2); -- Status 2 = ACTIVE
+
+INSERT INTO Account_detail (id, account_number, user_id, account_type_id, current_balance, role_id)
+VALUES (2, '1000000001', 6, 1, 50000.00, @customer_role_id);
+
+UPDATE Profile_detail SET selected_account_id = 1 WHERE id = 6;
+
+INSERT INTO Profile_detail (id, fullname, date_of_birth, gender_id, nationality_id, is_policy_agreement, pin)
+VALUES (2, 'Jane Smith', '1992-05-20', 2, 2, TRUE, @hashed_password);
+
+INSERT INTO Users (id, username, email, password, profile_id, role_id, status)
+VALUES (7, 'jane.smith', 'jane.smith@example.com', @hashed_password, 7, @customer_role_id, 2); -- Status 2 = ACTIVE
+
+INSERT INTO Account_detail (id, account_number, user_id, account_type_id, current_balance, role_id)
+VALUES (3, '1000000002', 7, 1, 75000.00, @customer_role_id);
+
+UPDATE Profile_detail SET selected_account_id = 2 WHERE id = 7;
+
+SET @admin_role_id = (SELECT id FROM Role WHERE role_type = 'ADMIN');
+
+INSERT INTO Organization (name, shortcode, address, country)
+VALUES ('Head Office', 'HQ', 'Yangon', 'Myanmar');
+
+-- 3️⃣ Create a Profile for the admin
+INSERT INTO Profile_detail (
+    fullname, date_of_birth, organization_id, gender_id, nationality_id,
+    is_policy_agreement, is_auto_save_receipt, pin
+)
+VALUES (
+           'System Admin',
+           '1985-01-01',
+           1,
+           1,
+           1,
+           TRUE,
+           TRUE,
+           '1234'
+       );
+
+SET @hashed_password = '$2y$10$hDqjFQfP9Xn6x7yP6YyNEOkUBN6j8OiWJmznFX/hHTDhKfTG6Lkni';
+
+INSERT INTO Users (
+    username, email, password, profile_id, role_id, status, created_by, updated_by
+)
+VALUES (
+           'admin',
+           'admin@bank.com',
+           @hashed_password,
+           LAST_INSERT_ID(),
+           @admin_role_id,
+           1,   -- active
+           1,
+           1
+       );
+
+INSERT INTO Account_type (code, created_by, updated_by)
+VALUES ('ADMIN_MAIN', 1, 1);
+
+SET @admin_account_type_id = LAST_INSERT_ID();
+SET @admin_user_id = (SELECT id FROM Users WHERE username = 'admin');
+
+INSERT INTO Account_detail (
+    account_number, user_id, account_type_id, current_balance, role_id, created_by, updated_by
+)
+VALUES (
+           'ADM-0001',
+           @admin_user_id,
+           @admin_account_type_id,
+           0.00,
+           @admin_role_id,
+           1,
+           1
+       );
+
+UPDATE Profile_detail
+SET selected_account_id = (SELECT id FROM Account_detail WHERE user_id = @admin_user_id)
+WHERE id = (SELECT profile_id FROM Users WHERE id = @admin_user_id);
