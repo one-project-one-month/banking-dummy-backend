@@ -65,4 +65,15 @@ public class JdbcAccountRepository implements AccountRepository {
         String sql = "UPDATE Account_detail SET current_balance = ? WHERE id = ?";
         jdbcTemplate.update(sql, newBalance, accountId);
     }
+
+    @Override
+    public Optional<AccountDetailResponse> findAccountDetailsById(Long accountId) {
+        String sql = "SELECT id, account_number, current_balance FROM Account_detail WHERE id = ?";
+        try {
+            AccountDetailResponse account = jdbcTemplate.queryForObject(sql, new AccountDetailRowMapper(), accountId);
+            return Optional.ofNullable(account);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
 }

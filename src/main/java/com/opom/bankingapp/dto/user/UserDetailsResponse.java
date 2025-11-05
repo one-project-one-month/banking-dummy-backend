@@ -3,5 +3,6 @@ package com.opom.bankingapp.dto.user;
 public record UserDetailsResponse(
     String email,
     String username,
-    double currentBalance
+    double currentBalance,
+    AccountDetailResponse selectedAccountDetails
 ) {}

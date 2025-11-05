@@ -1,5 +1,6 @@
 package com.opom.bankingapp.service.impl;
 
+import com.opom.bankingapp.dto.user.AccountDetailResponse;
 import com.opom.bankingapp.dto.user.FromAccountsResponse;
 import com.opom.bankingapp.dto.user.RecentTransferListResponse;
 import com.opom.bankingapp.dto.user.UserDetailsResponse;
@@ -12,6 +13,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -47,10 +50,22 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserDetailsResponse getUserDetails(UserPrincipal user) {
-        double balance = accountRepository.findBalanceByUserId(user.getId())
-                .orElse(0.0);
+        Optional<Long> selectedAccountIdOpt = userRepository.findSelectedAccountIdByUserId(user.getId());
 
-        return new UserDetailsResponse(user.getEmail(), user.getUsername(), balance);
+        AccountDetailResponse selectedAccountDetails = selectedAccountIdOpt
+                .flatMap(accountRepository::findAccountDetailsById)
+                .orElse(null);
+
+        double balance = Optional.ofNullable(selectedAccountDetails)
+                .map(AccountDetailResponse::balance)
+                .orElseGet(() -> accountRepository.findBalanceByUserId(user.getId()).orElse(0.0));
+
+        return new UserDetailsResponse(
+                user.getEmail(),
+                user.getUsername(),
+                balance,
+                selectedAccountDetails
+        );
     }
 
     @Override
