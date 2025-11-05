@@ -1,5 +1,6 @@
 package com.opom.bankingapp.repository.impl;
 
+import com.opom.bankingapp.dto.admin.AdminApprovalDetails;
 import com.opom.bankingapp.dto.auth.RegisterPersonalDetailsRequest;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.repository.UserRepository;
@@ -216,6 +217,26 @@ public class JdbcUserRepository implements UserRepository {
         try {
             Long accountId = jdbcTemplate.queryForObject(sql, Long.class, userId);
             return Optional.ofNullable(accountId);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateStatus(Long userId, int statusId) {
+        String sql = "UPDATE Users SET status = ? WHERE id = ?";
+        jdbcTemplate.update(sql, statusId, userId);
+    }
+
+    @Override
+    public Optional<AdminApprovalDetails> findApprovalDetailsById(Long userId) {
+        String sql = "SELECT username, email FROM Users WHERE id = ?";
+        try {
+            AdminApprovalDetails details = jdbcTemplate.queryForObject(sql,
+                    (rs, rowNum) -> new AdminApprovalDetails(rs.getString("username"), rs.getString("email")),
+                    userId);
+            return Optional.ofNullable(details);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
