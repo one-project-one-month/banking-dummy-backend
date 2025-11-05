@@ -1,11 +1,10 @@
 package com.opom.bankingapp.controller.personalbanking;
 
 import com.opom.bankingapp.dto.common.ApiResponse;
-import com.opom.bankingapp.dto.transfer.AccountNumberPrepareRequest;
-import com.opom.bankingapp.dto.transfer.NicknamePrepareRequest;
-import com.opom.bankingapp.dto.transfer.TransferPrepareResponse;
+import com.opom.bankingapp.dto.transfer.*;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.service.TransferService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -48,6 +47,21 @@ public class TransferController {
         ApiResponse<TransferPrepareResponse> response = new ApiResponse<>(
                 HttpStatus.OK.value(),
                 "Account details retrieved successfully",
+                responseData
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<ApiResponse<ValidateTransferResponse>> validateTransfer(
+            @AuthenticationPrincipal UserPrincipal user,
+            @Valid @RequestBody ValidateTransferRequest request) {
+
+        ValidateTransferResponse responseData = transferService.validateTransfer(user.getId(), request);
+
+        ApiResponse<ValidateTransferResponse> response = new ApiResponse<>(
+                HttpStatus.OK.value(),
+                "Transfer validated successfully",
                 responseData
         );
         return ResponseEntity.ok(response);
