@@ -2,8 +2,8 @@ server:
   port: ${SERVER_PORT:7777}
 
 spring:
-  profiles:
-    active: dev
+#  profiles:
+#    active: dev
   datasource:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?createDatabaseIfNotExist=true
     username: ${MYSQL_USER}
@@ -37,7 +37,7 @@ app:
     expiration-ms: ${APP_JWT_EXPIRATION_MS}
     refresh-expiration-ms: 604800000
   cors:
-    allowed-origins: http://localhost:5173,https://user-banking-app-frontend.vercel.app,https://corporate-banking-app-frontend.vercel.app
+    allowed-origins: http://localhost:5173, https://user-banking-app-frontend.vercel.app, https://corporate-banking-app-frontend.vercel.app
 
 springdoc:
   api-docs:

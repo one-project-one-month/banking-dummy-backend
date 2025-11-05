@@ -1,3 +1,3 @@
 package com.opom.bankingapp.dto.scan;
 
-public record FromAccountTokenPayload(int fromAccountId) {}
+public record FromAccountTokenPayload(Long fromAccountId) {}
