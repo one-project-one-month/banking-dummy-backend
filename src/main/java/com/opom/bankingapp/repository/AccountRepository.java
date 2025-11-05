@@ -11,4 +11,5 @@ public interface AccountRepository {
     Optional<Double> findBalanceByAccountId(Long accountId);
     void updateBalance(Long accountId, double newBalance);
     Optional<AccountDetailResponse> findAccountDetailsById(Long accountId);
+    long createAccount(long userId, String accountNumber, int accountTypeId, double initialBalance, long createdBy);
 }

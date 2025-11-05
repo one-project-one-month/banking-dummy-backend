@@ -5,11 +5,16 @@ import com.opom.bankingapp.repository.AccountRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -75,5 +80,25 @@ public class JdbcAccountRepository implements AccountRepository {
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public long createAccount(long userId, String accountNumber, int accountTypeId, double initialBalance, long createdBy) {
+        String sql = "INSERT INTO Account_detail (user_id, account_number, account_type_id, current_balance, created_by, created_at, updated_by, updated_at) " +
+                "VALUES (?, ?, ?, ?, ?, NOW(), ?, NOW())";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setLong(1, userId);
+            ps.setString(2, accountNumber);
+            ps.setInt(3, accountTypeId);
+            ps.setDouble(4, initialBalance);
+            ps.setLong(5, createdBy);
+            ps.setLong(6, createdBy);
+            return ps;
+        }, keyHolder);
+
+        return Objects.requireNonNull(keyHolder.getKey()).longValue();
     }
 }

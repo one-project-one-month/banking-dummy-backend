@@ -5,6 +5,7 @@ import com.opom.bankingapp.dto.admin.ActionType;
 import com.opom.bankingapp.dto.admin.AdminApprovalDetails;
 import com.opom.bankingapp.exception.ResourceNotFoundException;
 import com.opom.bankingapp.model.UserStatus;
+import com.opom.bankingapp.repository.AccountRepository;
 import com.opom.bankingapp.repository.UserRepository;
 import com.opom.bankingapp.service.AdminUserService;
 import com.opom.bankingapp.service.EmailService;
@@ -20,11 +21,13 @@ public class AdminUserServiceImpl implements AdminUserService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final AccountRepository accountRepository;
 
-    public AdminUserServiceImpl(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
+    public AdminUserServiceImpl(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder, AccountRepository accountRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
+        this.accountRepository = accountRepository;
     }
 
     @Override
@@ -44,6 +47,14 @@ public class AdminUserServiceImpl implements AdminUserService {
             String newHashedPassword = passwordEncoder.encode(newRawPassword);
 
             userRepository.updatePassword(userId, newHashedPassword);
+
+            String newAccountNumber = String.format("ACC%07d", System.currentTimeMillis() % 10000000L);
+            int defaultAccountTypeId = 1;
+            double initialBalance = 0.0;
+
+            long newAccountId = accountRepository.createAccount(userId, newAccountNumber, defaultAccountTypeId, initialBalance, adminId);
+
+            userRepository.updateSelectedAccount(userId, (int) newAccountId);
 
             emailService.sendAccountApprovedEmail(userDetails.email(), userDetails.username(), newRawPassword);
 
