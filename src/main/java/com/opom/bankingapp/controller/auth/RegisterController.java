@@ -60,7 +60,7 @@ public class RegisterController {
 
         ApiResponse<AuthResponse> response = new ApiResponse<>(
                 HttpStatus.OK.value(),
-                "Personal details registered successfully",
+                "Personal details registered successfully. Account is pending admin approval.",
                 authData
         );
         return ResponseEntity.ok(response);

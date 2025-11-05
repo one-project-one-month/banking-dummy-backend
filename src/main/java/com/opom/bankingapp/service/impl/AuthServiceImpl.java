@@ -124,15 +124,16 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.saveUser(username, email, hashedPassword, profileId, roleId, statusId);
 
-        UserPrincipal userPrincipal = new UserPrincipal(-1L, username, hashedPassword, "CUSTOMER", email);
+        /*UserPrincipal userPrincipal = new UserPrincipal(-1L, username, hashedPassword, "CUSTOMER", email);
         String jwtToken = jwtService.generateToken(userPrincipal);
-        
+
         System.out.println("---- DEMO: User created ----");
         System.out.println("Username: " + username);
         System.out.println("Password: " + rawPassword + " (This is a demo password)");
-        System.out.println("-----------------------------");
+        System.out.println("-----------------------------");*/
 
-        return new AuthResponse(jwtToken, null, email, username, 0.0);
+//        return new AuthResponse(jwtToken, null, email, username, 0.0);
+        return new AuthResponse(null, null, email, username, 0.0);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.opom.bankingapp.repository;
 
+import com.opom.bankingapp.dto.admin.AdminApprovalDetails;
 import com.opom.bankingapp.dto.auth.RegisterPersonalDetailsRequest;
 import com.opom.bankingapp.model.UserPrincipal;
 
@@ -30,4 +31,8 @@ public interface UserRepository {
     void updatePassword(Long userId, String newHashedPassword);
     void updateSelectedAccount(Long userId, int accountId);
     Optional<Long> findSelectedAccountIdByUserId(Long userId);
+
+    void updateStatus(Long userId, int statusId);
+
+    Optional<AdminApprovalDetails> findApprovalDetailsById(Long userId);
 }
