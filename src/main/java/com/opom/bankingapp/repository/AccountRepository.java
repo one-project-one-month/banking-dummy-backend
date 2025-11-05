@@ -10,4 +10,5 @@ public interface AccountRepository {
     List<AccountDetailResponse> findAccountsByUserId(Long userId);
     Optional<Double> findBalanceByAccountId(Long accountId);
     void updateBalance(Long accountId, double newBalance);
+    Optional<AccountDetailResponse> findAccountDetailsById(Long accountId);
 }
