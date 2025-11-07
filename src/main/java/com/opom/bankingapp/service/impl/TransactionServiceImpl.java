@@ -2,6 +2,7 @@ package com.opom.bankingapp.service.impl;
 
 import com.opom.bankingapp.dto.scan.QrTokenPayload;
 import com.opom.bankingapp.dto.scan.ScanToPayRequest;
+import com.opom.bankingapp.dto.transfer.ConfirmTransferRequest;
 import com.opom.bankingapp.exception.ResourceNotFoundException;
 import com.opom.bankingapp.repository.AccountRepository;
 import com.opom.bankingapp.repository.TransactionRepository;
@@ -12,6 +13,8 @@ import com.opom.bankingapp.service.UserService;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -51,10 +54,36 @@ public class TransactionServiceImpl implements TransactionService {
             throw new BadCredentialsException("Transaction amount must be positive.");
         }
         
-        if (fromAccountId == toAccountId) {
+        if (Objects.equals(fromAccountId, toAccountId)) {
             throw new BadCredentialsException("Cannot transfer to the same account.");
         }
 
+        retrieveBalanceAndMakeTransaction(payerUserId, fromAccountId, toAccountId, amount);
+    }
+
+    @Override
+    @Transactional
+    public void executeTransfer(Long payerUserId, ConfirmTransferRequest request) {
+        userService.verifyPin(payerUserId, request.pin());
+
+        Long fromAccountId = userRepository.findSelectedAccountIdByUserId(payerUserId)
+                .orElseThrow(() -> new BadCredentialsException("No selected account found for user."));
+
+        Long toAccountId = request.toAccountId().longValue();
+        double amount = request.amount();
+
+        if (amount <= 0) {
+            throw new BadCredentialsException("Transaction amount must be positive.");
+        }
+
+        if (fromAccountId.equals(toAccountId)) {
+            throw new BadCredentialsException("Cannot transfer to the same account.");
+        }
+
+        retrieveBalanceAndMakeTransaction(payerUserId, fromAccountId, toAccountId, amount);
+    }
+
+    private void retrieveBalanceAndMakeTransaction(Long payerUserId, Long fromAccountId, Long toAccountId, double amount) {
         double fromBalance = accountRepository.findBalanceByAccountId(fromAccountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payer account not found."));
 

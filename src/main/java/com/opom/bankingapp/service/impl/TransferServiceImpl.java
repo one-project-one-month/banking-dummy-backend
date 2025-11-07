@@ -52,7 +52,6 @@ public class TransferServiceImpl implements TransferService {
     @Override
     @Transactional(readOnly = true)
     public ValidateTransferResponse validateTransfer(Long fromUserId, ValidateTransferRequest request) {
-        userService.verifyPin(fromUserId, request.pin());
 
         Long fromAccountId = userRepository.findSelectedAccountIdByUserId(fromUserId)
                 .orElseThrow(() -> new BadCredentialsException("No account selected. Please select an account to transfer from."));
