@@ -1,6 +1,7 @@
 package com.opom.bankingapp.repository.impl;
 
 import com.opom.bankingapp.dto.admin.AdminApprovalDetails;
+import com.opom.bankingapp.dto.admin.UserAdminResponse;
 import com.opom.bankingapp.dto.auth.RegisterPersonalDetailsRequest;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.repository.UserRepository;
@@ -16,6 +17,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -240,5 +243,47 @@ public class JdbcUserRepository implements UserRepository {
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    private static class UserAdminResponseRowMapper implements RowMapper<UserAdminResponse> {
+        @Override
+        public UserAdminResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
+            boolean status = rs.getInt("user_status") == 2;
+
+            return new UserAdminResponse(
+                    rs.getLong("user_id"),
+                    rs.getString("fullname"),
+                    rs.getString("email"),
+                    rs.getString("role_type"),
+                    rs.getString("organization_name"),
+                    status,
+                    rs.getTimestamp("created_at").toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+                    Optional.ofNullable(rs.getTimestamp("updated_at"))
+                            .map(t -> t.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+                            .orElse(null)
+            );
+        }
+    }
+
+    private static final String FIND_ALL_USERS_SQL = """
+        SELECT 
+            u.id AS user_id,
+            pd.fullname,
+            u.email,
+            r.role_type,
+            o.name AS organization_name,
+            u.status AS user_status,
+            u.created_at,
+            u.updated_at
+        FROM Users u
+        JOIN Profile_detail pd ON u.profile_id = pd.id
+        JOIN Role r ON u.role_id = r.id
+        LEFT JOIN Organization o ON pd.organization_id = o.id
+    """;
+
+    @Override
+    public List<UserAdminResponse> findAllUsersForAdmin() {
+        String sql = FIND_ALL_USERS_SQL + " ORDER BY u.created_at DESC";
+        return jdbcTemplate.query(sql, new UserAdminResponseRowMapper());
     }
 }

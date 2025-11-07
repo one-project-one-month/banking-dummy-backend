@@ -1,9 +1,11 @@
 package com.opom.bankingapp.repository;
 
 import com.opom.bankingapp.dto.admin.AdminApprovalDetails;
+import com.opom.bankingapp.dto.admin.UserAdminResponse;
 import com.opom.bankingapp.dto.auth.RegisterPersonalDetailsRequest;
 import com.opom.bankingapp.model.UserPrincipal;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository {
@@ -35,4 +37,6 @@ public interface UserRepository {
     void updateStatus(Long userId, int statusId);
 
     Optional<AdminApprovalDetails> findApprovalDetailsById(Long userId);
+
+    List<UserAdminResponse> findAllUsersForAdmin();
 }
