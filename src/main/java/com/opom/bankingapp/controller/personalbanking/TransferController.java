@@ -3,6 +3,7 @@ package com.opom.bankingapp.controller.personalbanking;
 import com.opom.bankingapp.dto.common.ApiResponse;
 import com.opom.bankingapp.dto.transfer.*;
 import com.opom.bankingapp.model.UserPrincipal;
+import com.opom.bankingapp.service.TransactionService;
 import com.opom.bankingapp.service.TransferService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,9 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class TransferController {
 
     private final TransferService transferService;
+    private final TransactionService transactionService;
 
-    public TransferController(TransferService transferService) {
+    public TransferController(TransferService transferService, TransactionService transactionService) {
         this.transferService = transferService;
+        this.transactionService = transactionService;
     }
 
     @PostMapping("/nickname/prepare")
@@ -65,5 +68,17 @@ public class TransferController {
                 responseData
         );
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/confirm")
+    public ResponseEntity<ApiResponse<String>> confirmTransfer(
+            @AuthenticationPrincipal UserPrincipal user,
+            @Valid @RequestBody ConfirmTransferRequest request) {
+
+        transactionService.executeTransfer(user.getId(), request);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "Transfer successful", null)
+        );
     }
 }
