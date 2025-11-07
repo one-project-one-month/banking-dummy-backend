@@ -1,6 +1,7 @@
 package com.opom.bankingapp.controller.bankadmin;
 
 import com.opom.bankingapp.dto.admin.AccountActionRequest;
+import com.opom.bankingapp.dto.admin.UserListAdminResponse;
 import com.opom.bankingapp.dto.common.ApiResponse;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.service.AdminUserService;
@@ -57,6 +58,15 @@ public class UserAdminController {
 
         return ResponseEntity.ok(
                 new ApiResponse<>(HttpStatus.OK.value(), "User account " + action + " successfully", null)
+        );
+    }
+
+    @Operation(summary = "Get all users for admin panel")
+    @GetMapping
+    public ResponseEntity<ApiResponse<UserListAdminResponse>> getAllUsers() {
+        UserListAdminResponse responseData = adminUserService.getAllUsers();
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "Users retrieved successfully", responseData)
         );
     }
 }

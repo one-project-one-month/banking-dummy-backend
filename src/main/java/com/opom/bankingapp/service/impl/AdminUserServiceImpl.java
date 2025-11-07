@@ -3,6 +3,7 @@ package com.opom.bankingapp.service.impl;
 import com.opom.bankingapp.dto.admin.AccountActionRequest;
 import com.opom.bankingapp.dto.admin.ActionType;
 import com.opom.bankingapp.dto.admin.AdminApprovalDetails;
+import com.opom.bankingapp.dto.admin.UserListAdminResponse;
 import com.opom.bankingapp.exception.ResourceNotFoundException;
 import com.opom.bankingapp.model.UserStatus;
 import com.opom.bankingapp.repository.AccountRepository;
@@ -69,5 +70,11 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         System.out.printf("---- ADMIN ACTION ----\nUser ID %d has been %s by Admin ID %d.\nNew Status: %s\n----------------------\n",
                 userId, actionMessage, adminId, UserStatus.fromCode(newStatus).getValue());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserListAdminResponse getAllUsers() {
+        return new UserListAdminResponse(userRepository.findAllUsersForAdmin());
     }
 }
