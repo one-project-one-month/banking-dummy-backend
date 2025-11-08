@@ -133,4 +133,12 @@ public class UserServiceImpl implements UserService {
 
         userRepository.updateSelectedAccount(userId, accountId);
     }
+
+    @Override
+    @Transactional
+    public UserDetailsResponse updateProfileDetails(UserPrincipal user, UpdateProfileRequest request) {
+        userRepository.updateProfileDetails(user.getId(), request);
+
+        return this.getUserDetails(user);
+    }
 }

@@ -4,6 +4,7 @@ import com.opom.bankingapp.dto.admin.AdminApprovalDetails;
 import com.opom.bankingapp.dto.admin.UserAdminResponse;
 import com.opom.bankingapp.dto.auth.RegisterPersonalDetailsRequest;
 import com.opom.bankingapp.dto.user.ProfileDetailsDto;
+import com.opom.bankingapp.dto.user.UpdateProfileRequest;
 import com.opom.bankingapp.model.UserPrincipal;
 
 import java.util.List;
@@ -42,4 +43,6 @@ public interface UserRepository {
     List<UserAdminResponse> findAllUsersForAdmin();
 
     Optional<ProfileDetailsDto> findProfileDetailsByUserId(Long userId);
+
+    void updateProfileDetails(Long userId, UpdateProfileRequest request);
 }

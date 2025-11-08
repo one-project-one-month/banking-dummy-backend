@@ -5,6 +5,7 @@ import com.opom.bankingapp.dto.admin.UserAdminResponse;
 import com.opom.bankingapp.dto.auth.RegisterPersonalDetailsRequest;
 import com.opom.bankingapp.dto.common.OptionDto;
 import com.opom.bankingapp.dto.user.ProfileDetailsDto;
+import com.opom.bankingapp.dto.user.UpdateProfileRequest;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.repository.UserRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -333,5 +334,27 @@ public class JdbcUserRepository implements UserRepository {
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    @Transactional
+    public void updateProfileDetails(Long userId, UpdateProfileRequest request) {
+        String sql = """
+            UPDATE Profile_detail pd
+            JOIN Users u ON u.profile_id = pd.id
+            SET
+                pd.fullname = ?,
+                pd.date_of_birth = ?,
+                pd.gender_id = ?,
+                pd.nationality_id = ?
+            WHERE u.id = ?
+        """;
+        jdbcTemplate.update(sql,
+                request.fullname(),
+                request.dateOfBirth(),
+                request.genderId(),
+                request.nationalityId(),
+                userId
+        );
     }
 }
