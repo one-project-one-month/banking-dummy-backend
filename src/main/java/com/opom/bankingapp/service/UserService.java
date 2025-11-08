@@ -1,5 +1,6 @@
 package com.opom.bankingapp.service;
 
+import com.opom.bankingapp.dto.user.ChangeUserDetailRequest;
 import com.opom.bankingapp.dto.user.FromAccountsResponse;
 import com.opom.bankingapp.dto.user.RecentTransferListResponse;
 import com.opom.bankingapp.dto.user.UserDetailsResponse;
@@ -13,6 +14,7 @@ public interface UserService {
     RecentTransferListResponse getRecentTransfers(Long userId);
     void setAutoSaveReceipt(Long userId, boolean flag);
     void changePassword(Long userId, String oldPassword, String newPassword);
+    void changeUserDetails(Long userId,ChangeUserDetailRequest request);
     void verifyPin(Long userId, String oldPin);
     void switchAccount(Long userId, int accountId);
 }

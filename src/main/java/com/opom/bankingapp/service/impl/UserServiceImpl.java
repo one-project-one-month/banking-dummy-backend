@@ -2,12 +2,13 @@ package com.opom.bankingapp.service.impl;
 
 import java.util.Optional;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.opom.bankingapp.dto.user.AccountDetailResponse;
+import com.opom.bankingapp.dto.user.ChangeUserDetailRequest;
 import com.opom.bankingapp.dto.user.FromAccountsResponse;
 import com.opom.bankingapp.dto.user.MeResponse;
 import com.opom.bankingapp.dto.user.RecentTransferListResponse;
@@ -102,6 +103,12 @@ public class UserServiceImpl implements UserService {
 
         String newHashedPassword = passwordEncoder.encode(newPassword);
         userRepository.updatePassword(userId, newHashedPassword);
+    }
+    
+    @Override
+    @Transactional
+    public void changeUserDetails(Long userId, ChangeUserDetailRequest request) {
+    	userRepository.changeUserDetails(userId, request);
     }
 
     @Override

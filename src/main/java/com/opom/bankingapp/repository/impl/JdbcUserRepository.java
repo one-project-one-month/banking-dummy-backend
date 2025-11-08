@@ -1,18 +1,5 @@
 package com.opom.bankingapp.repository.impl;
 
-import com.opom.bankingapp.dto.admin.AdminApprovalDetails;
-import com.opom.bankingapp.dto.admin.UserAdminResponse;
-import com.opom.bankingapp.dto.auth.RegisterPersonalDetailsRequest;
-import com.opom.bankingapp.model.UserPrincipal;
-import com.opom.bankingapp.repository.UserRepository;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,6 +8,21 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.opom.bankingapp.dto.admin.AdminApprovalDetails;
+import com.opom.bankingapp.dto.admin.UserAdminResponse;
+import com.opom.bankingapp.dto.auth.RegisterPersonalDetailsRequest;
+import com.opom.bankingapp.dto.user.ChangeUserDetailRequest;
+import com.opom.bankingapp.model.UserPrincipal;
+import com.opom.bankingapp.repository.UserRepository;
 
 @Repository
 public class JdbcUserRepository implements UserRepository {
@@ -286,4 +288,27 @@ public class JdbcUserRepository implements UserRepository {
         String sql = FIND_ALL_USERS_SQL + " ORDER BY u.created_at DESC";
         return jdbcTemplate.query(sql, new UserAdminResponseRowMapper());
     }
+    
+    @Override
+    @Transactional
+    public void changeUserDetails(Long userId, ChangeUserDetailRequest request) {
+        String findProfileSql = "SELECT profile_id FROM Users WHERE id = ?";
+        Long profileId;
+        try {
+            profileId = jdbcTemplate.queryForObject(findProfileSql, Long.class, userId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new RuntimeException("User not found with id: " + userId);
+        }
+
+        String updateUserSql = "UPDATE Users SET username = ?, email = ? WHERE id = ?";
+        jdbcTemplate.update(updateUserSql, request.username(), request.email(), userId);
+
+        String updateProfileSql = """
+            UPDATE Profile_detail 
+            SET fullname = ?, date_of_birth = ?, nationality_id = ? 
+            WHERE id = ?
+        """;
+        jdbcTemplate.update(updateProfileSql, request.fullname(), request.dateOfBirth(), request.nationalityId(), profileId);
+    }
+
 }
