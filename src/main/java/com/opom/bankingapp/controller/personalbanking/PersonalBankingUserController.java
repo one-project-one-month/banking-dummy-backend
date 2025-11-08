@@ -54,7 +54,18 @@ public class PersonalBankingUserController {
             new ApiResponse<>(HttpStatus.OK.value(), "User details retrieved", userDetails)
         );
     }
-
+    
+    @PutMapping("/me")
+    public ResponseEntity<ApiResponse<String>> changeUserDetails(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestBody ChangeUserDetailRequest request) {
+        
+        userService.changeUserDetails(user.getId(),request);        
+        return ResponseEntity.ok(
+            new ApiResponse<>(HttpStatus.OK.value(), "User details changed successfully", null)
+        );
+    }
+    
     @GetMapping("/from-accounts")
     public ResponseEntity<ApiResponse<FromAccountsResponse>> getFromAccounts(
             @AuthenticationPrincipal UserPrincipal user) {

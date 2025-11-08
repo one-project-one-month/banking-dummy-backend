@@ -40,7 +40,7 @@ public class JdbcNicknameRepository implements NicknameRepository {
 	public NicknameListResponse getNicknamesByUserId(Long userId) {
 	    String sql = """
 	        SELECT n.id AS nickname_id,
-	    		   n.name AS nickname,
+	    		   n.nickname AS nickname,
 	               a.id AS account_id,
 	               a.account_number
 	          FROM Nickname n
