@@ -31,7 +31,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
             AccountDetailResponse account = new AccountDetailResponse(
                 rs.getInt("recipient_account_id"),
                 rs.getString("recipient_account_number"),
-                0
+                rs.getDouble("transaction_amount")
             );
             return new RecentTransfer(user, account);
         }
@@ -41,6 +41,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
     public List<RecentTransfer> findRecentTransfersByUserId(Long userId) {
         String sql = "SELECT " +
             "    t.created_at, " +
+            "    t.amount AS transaction_amount, " +
             "    u_recipient.id AS recipient_user_id, " +
             "    pd_recipient.fullname AS recipient_fullname, " +
             "    ad_recipient.id AS recipient_account_id, " +
