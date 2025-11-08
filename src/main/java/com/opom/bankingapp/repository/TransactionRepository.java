@@ -6,4 +6,5 @@ import java.util.List;
 public interface TransactionRepository {
     List<RecentTransfer> findRecentTransfersByUserId(Long userId);
     void saveTransaction(Long fromAccountId, Long toAccountId, double amount, Long createdBy);
+    List<RecentTransfer> findTransactionHistoryByUserId(Long userId);
 }

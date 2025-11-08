@@ -147,4 +147,15 @@ public class PersonalBankingUserController {
                 new ApiResponse<>(HttpStatus.OK.value(), "User details updated successfully", updatedDetails)
         );
     }
+
+    @GetMapping("/transaction-history")
+    public ResponseEntity<ApiResponse<RecentTransferListResponse>> getTransactionHistory(
+            @AuthenticationPrincipal UserPrincipal user) {
+
+        RecentTransferListResponse responseData = userService.getTransactionHistory(user.getId());
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "Transaction history retrieved", responseData)
+        );
+    }
 }

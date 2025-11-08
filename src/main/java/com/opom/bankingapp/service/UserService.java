@@ -19,4 +19,5 @@ public interface UserService {
     void verifyPin(Long userId, String oldPin);
     void switchAccount(Long userId, int accountId);
     UserDetailsResponse updateProfileDetails(UserPrincipal user, UpdateProfileRequest request);
+    RecentTransferListResponse getTransactionHistory(Long userId);
 }

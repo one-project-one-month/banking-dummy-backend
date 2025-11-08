@@ -141,4 +141,11 @@ public class UserServiceImpl implements UserService {
 
         return this.getUserDetails(user);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RecentTransferListResponse getTransactionHistory(Long userId) {
+        var transfers = transactionRepository.findTransactionHistoryByUserId(userId);
+        return new RecentTransferListResponse(transfers);
+    }
 }
