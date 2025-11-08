@@ -14,5 +14,5 @@ public record UserDetailsResponse(
     boolean isPolicyAgreement,
     boolean isAutoSaveReceipt,
     double currentBalance,
-    MeResponse selectedAccountDetails
+    AccountDetailResponse selectedAccountDetails
 ) {}
