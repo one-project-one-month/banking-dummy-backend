@@ -4,6 +4,7 @@ import com.opom.bankingapp.dto.common.ApiResponse;
 import com.opom.bankingapp.dto.user.*;
 import com.opom.bankingapp.service.UserService;
 import com.opom.bankingapp.model.UserPrincipal;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -132,6 +133,18 @@ public class PersonalBankingUserController {
 
         return ResponseEntity.ok(
                 new ApiResponse<>(HttpStatus.OK.value(), "Account switched successfully", null)
+        );
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<ApiResponse<UserDetailsResponse>> updateUserDetails(
+            @AuthenticationPrincipal UserPrincipal user,
+            @Valid @RequestBody UpdateProfileRequest request) {
+
+        UserDetailsResponse updatedDetails = userService.updateProfileDetails(user, request);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "User details updated successfully", updatedDetails)
         );
     }
 }

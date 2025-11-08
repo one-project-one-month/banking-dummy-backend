@@ -1,23 +1,18 @@
 package com.opom.bankingapp.service.impl;
 
-import java.util.Optional;
-
-import org.springframework.dao.EmptyResultDataAccessException;
+import com.opom.bankingapp.dto.user.*;
+import com.opom.bankingapp.exception.ResourceNotFoundException;
+import com.opom.bankingapp.service.UserService;
+import com.opom.bankingapp.model.UserPrincipal;
+import com.opom.bankingapp.repository.AccountRepository;
+import com.opom.bankingapp.repository.TransactionRepository;
+import com.opom.bankingapp.repository.UserRepository;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.opom.bankingapp.dto.user.ChangeUserDetailRequest;
-import com.opom.bankingapp.dto.user.FromAccountsResponse;
-import com.opom.bankingapp.dto.user.MeResponse;
-import com.opom.bankingapp.dto.user.RecentTransferListResponse;
-import com.opom.bankingapp.dto.user.UserDetailsResponse;
-import com.opom.bankingapp.model.UserPrincipal;
-import com.opom.bankingapp.repository.AccountRepository;
-import com.opom.bankingapp.repository.TransactionRepository;
-import com.opom.bankingapp.repository.UserRepository;
-import com.opom.bankingapp.service.UserService;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -55,17 +50,26 @@ public class UserServiceImpl implements UserService {
     public UserDetailsResponse getUserDetails(UserPrincipal user) {
         Optional<Long> selectedAccountIdOpt = userRepository.findSelectedAccountIdByUserId(user.getId());
 
-        MeResponse selectedAccountDetails = selectedAccountIdOpt
-                .flatMap(accountRepository::findMeByAccountDetailsId)
+        ProfileDetailsDto profile = userRepository.findProfileDetailsByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Profile not found for user ID: " + user.getId()));
+
+        AccountDetailResponse selectedAccountDetails = selectedAccountIdOpt
+                .flatMap(accountRepository::findAccountDetailsById)
                 .orElse(null);
 
         double balance = Optional.ofNullable(selectedAccountDetails)
-                .map(MeResponse::balance)
+                .map(AccountDetailResponse::balance)
                 .orElseGet(() -> accountRepository.findBalanceByUserId(user.getId()).orElse(0.0));
 
         return new UserDetailsResponse(
                 user.getEmail(),
                 user.getUsername(),
+                profile.fullname(),
+                profile.dateOfBirth(),
+                profile.gender(),
+                profile.nationality(),
+                profile.isPolicyAgreement(),
+                profile.isAutoSaveReceipt(),
                 balance,
                 selectedAccountDetails
         );
@@ -104,12 +108,6 @@ public class UserServiceImpl implements UserService {
         String newHashedPassword = passwordEncoder.encode(newPassword);
         userRepository.updatePassword(userId, newHashedPassword);
     }
-    
-    @Override
-    @Transactional
-    public void changeUserDetails(Long userId, ChangeUserDetailRequest request) {
-    	userRepository.changeUserDetails(userId, request);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -134,5 +132,13 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.updateSelectedAccount(userId, accountId);
+    }
+
+    @Override
+    @Transactional
+    public UserDetailsResponse updateProfileDetails(UserPrincipal user, UpdateProfileRequest request) {
+        userRepository.updateProfileDetails(user.getId(), request);
+
+        return this.getUserDetails(user);
     }
 }
