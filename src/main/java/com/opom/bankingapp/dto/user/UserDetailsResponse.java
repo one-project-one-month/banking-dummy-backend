@@ -4,5 +4,5 @@ public record UserDetailsResponse(
     String email,
     String username,
     double currentBalance,
-    AccountDetailResponse selectedAccountDetails
+    MeResponse selectedAccountDetails
 ) {}

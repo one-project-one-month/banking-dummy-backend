@@ -1,14 +1,5 @@
 package com.opom.bankingapp.repository.impl;
 
-import com.opom.bankingapp.dto.user.AccountDetailResponse;
-import com.opom.bankingapp.repository.AccountRepository;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Repository;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,6 +7,17 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
+
+import com.opom.bankingapp.dto.user.AccountDetailResponse;
+import com.opom.bankingapp.dto.user.MeResponse;
+import com.opom.bankingapp.repository.AccountRepository;
 
 @Repository
 public class JdbcAccountRepository implements AccountRepository {
@@ -37,13 +39,32 @@ public class JdbcAccountRepository implements AccountRepository {
         }
     }
 
+    private static class MeRowMapper implements RowMapper<MeResponse> {
+        @Override
+        public MeResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new MeResponse(
+                rs.getInt("id"),
+                rs.getString("account_number"),
+                rs.getDouble("current_balance"),
+                rs.getString("username"),
+                rs.getString("email"),
+                rs.getInt("status"),
+                rs.getString("fullname"),
+                rs.getDate("date_of_birth"),
+                rs.getBoolean("is_policy_agreement"),
+                rs.getBoolean("is_auto_save_receipt"),
+                rs.getString("nationality")
+            );
+        }
+    }
+    
     private static class AccountDetailRowMapper implements RowMapper<AccountDetailResponse> {
         @Override
         public AccountDetailResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new AccountDetailResponse(
-                    rs.getInt("id"),
-                    rs.getString("account_number"),
-                    rs.getDouble("current_balance")
+                rs.getInt("id"),
+                rs.getString("account_number"),
+                rs.getDouble("current_balance")
             );
         }
     }
@@ -76,6 +97,20 @@ public class JdbcAccountRepository implements AccountRepository {
         String sql = "SELECT id, account_number, current_balance FROM Account_detail WHERE id = ?";
         try {
             AccountDetailResponse account = jdbcTemplate.queryForObject(sql, new AccountDetailRowMapper(), accountId);
+            return Optional.ofNullable(account);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+    
+    @Override
+    public Optional<MeResponse> findMeByAccountDetailsId(Long accountId) {
+        String sql = "SELECT a.id, a.account_number, a.current_balance, u.username, u.email, u.status, p.fullname, p.date_of_birth, p.is_policy_agreement, p.is_auto_save_receipt, n.name AS nationality FROM Account_detail a "
+        		+ "JOIN Users u ON a.user_id = u.id "
+        		+ "JOIN Profile_detail p ON u.profile_id = p.id JOIN Nationality n ON p.nationality_id = n.id "
+        		+ "WHERE a.id = ?";
+        try {
+        	MeResponse account = jdbcTemplate.queryForObject(sql, new MeRowMapper(), accountId);
             return Optional.ofNullable(account);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();

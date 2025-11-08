@@ -1,20 +1,22 @@
 package com.opom.bankingapp.service.impl;
 
-import com.opom.bankingapp.dto.user.AccountDetailResponse;
-import com.opom.bankingapp.dto.user.FromAccountsResponse;
-import com.opom.bankingapp.dto.user.RecentTransferListResponse;
-import com.opom.bankingapp.dto.user.UserDetailsResponse;
-import com.opom.bankingapp.service.UserService;
-import com.opom.bankingapp.model.UserPrincipal;
-import com.opom.bankingapp.repository.AccountRepository;
-import com.opom.bankingapp.repository.TransactionRepository;
-import com.opom.bankingapp.repository.UserRepository;
+import java.util.Optional;
+
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import com.opom.bankingapp.dto.user.AccountDetailResponse;
+import com.opom.bankingapp.dto.user.FromAccountsResponse;
+import com.opom.bankingapp.dto.user.MeResponse;
+import com.opom.bankingapp.dto.user.RecentTransferListResponse;
+import com.opom.bankingapp.dto.user.UserDetailsResponse;
+import com.opom.bankingapp.model.UserPrincipal;
+import com.opom.bankingapp.repository.AccountRepository;
+import com.opom.bankingapp.repository.TransactionRepository;
+import com.opom.bankingapp.repository.UserRepository;
+import com.opom.bankingapp.service.UserService;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -52,12 +54,12 @@ public class UserServiceImpl implements UserService {
     public UserDetailsResponse getUserDetails(UserPrincipal user) {
         Optional<Long> selectedAccountIdOpt = userRepository.findSelectedAccountIdByUserId(user.getId());
 
-        AccountDetailResponse selectedAccountDetails = selectedAccountIdOpt
-                .flatMap(accountRepository::findAccountDetailsById)
+        MeResponse selectedAccountDetails = selectedAccountIdOpt
+                .flatMap(accountRepository::findMeByAccountDetailsId)
                 .orElse(null);
 
         double balance = Optional.ofNullable(selectedAccountDetails)
-                .map(AccountDetailResponse::balance)
+                .map(MeResponse::balance)
                 .orElseGet(() -> accountRepository.findBalanceByUserId(user.getId()).orElse(0.0));
 
         return new UserDetailsResponse(
