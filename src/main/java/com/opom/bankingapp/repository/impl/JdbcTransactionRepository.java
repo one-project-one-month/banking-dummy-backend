@@ -31,7 +31,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
             AccountDetailResponse account = new AccountDetailResponse(
                 rs.getInt("recipient_account_id"),
                 rs.getString("recipient_account_number"),
-                0
+                rs.getDouble("transaction_amount")
             );
             return new RecentTransfer(user, account);
         }
@@ -41,6 +41,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
     public List<RecentTransfer> findRecentTransfersByUserId(Long userId) {
         String sql = "SELECT " +
             "    t.created_at, " +
+            "    t.amount AS transaction_amount, " +
             "    u_recipient.id AS recipient_user_id, " +
             "    pd_recipient.fullname AS recipient_fullname, " +
             "    ad_recipient.id AS recipient_account_id, " +
@@ -61,5 +62,25 @@ public class JdbcTransactionRepository implements TransactionRepository {
     public void saveTransaction(Long fromAccountId, Long toAccountId, double amount, Long createdBy) {
         String insertTxSql = "INSERT INTO Transaction (debit_account_id, credit_account_id, amount, created_by, created_at) VALUES (?, ?, ?, ?, NOW())";
         jdbcTemplate.update(insertTxSql, fromAccountId, toAccountId, amount, createdBy);
+    }
+
+    @Override
+    public List<RecentTransfer> findTransactionHistoryByUserId(Long userId) {
+        String sql = "SELECT " +
+                "    t.created_at, " +
+                "    t.amount AS transaction_amount, " +
+                "    u_recipient.id AS recipient_user_id, " +
+                "    pd_recipient.fullname AS recipient_fullname, " +
+                "    ad_recipient.id AS recipient_account_id, " +
+                "    ad_recipient.account_number AS recipient_account_number " +
+                "FROM Transaction t " +
+                "JOIN Account_detail ad_sender ON t.debit_account_id = ad_sender.id " +
+                "JOIN Account_detail ad_recipient ON t.credit_account_id = ad_recipient.id " +
+                "JOIN Users u_recipient ON ad_recipient.user_id = u_recipient.id " +
+                "JOIN Profile_detail pd_recipient ON u_recipient.profile_id = pd_recipient.id " +
+                "WHERE ad_sender.user_id = ? " +
+                "ORDER BY t.created_at DESC";
+
+        return jdbcTemplate.query(sql, new RecentTransferRowMapper(), userId);
     }
 }
