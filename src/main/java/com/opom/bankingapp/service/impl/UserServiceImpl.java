@@ -1,9 +1,7 @@
 package com.opom.bankingapp.service.impl;
 
-import com.opom.bankingapp.dto.user.AccountDetailResponse;
-import com.opom.bankingapp.dto.user.FromAccountsResponse;
-import com.opom.bankingapp.dto.user.RecentTransferListResponse;
-import com.opom.bankingapp.dto.user.UserDetailsResponse;
+import com.opom.bankingapp.dto.user.*;
+import com.opom.bankingapp.exception.ResourceNotFoundException;
 import com.opom.bankingapp.service.UserService;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.repository.AccountRepository;
@@ -52,6 +50,9 @@ public class UserServiceImpl implements UserService {
     public UserDetailsResponse getUserDetails(UserPrincipal user) {
         Optional<Long> selectedAccountIdOpt = userRepository.findSelectedAccountIdByUserId(user.getId());
 
+        ProfileDetailsDto profile = userRepository.findProfileDetailsByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Profile not found for user ID: " + user.getId()));
+
         AccountDetailResponse selectedAccountDetails = selectedAccountIdOpt
                 .flatMap(accountRepository::findAccountDetailsById)
                 .orElse(null);
@@ -63,6 +64,12 @@ public class UserServiceImpl implements UserService {
         return new UserDetailsResponse(
                 user.getEmail(),
                 user.getUsername(),
+                profile.fullname(),
+                profile.dateOfBirth(),
+                profile.gender(),
+                profile.nationality(),
+                profile.isPolicyAgreement(),
+                profile.isAutoSaveReceipt(),
                 balance,
                 selectedAccountDetails
         );

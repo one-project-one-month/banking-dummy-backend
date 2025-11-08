@@ -3,6 +3,8 @@ package com.opom.bankingapp.repository.impl;
 import com.opom.bankingapp.dto.admin.AdminApprovalDetails;
 import com.opom.bankingapp.dto.admin.UserAdminResponse;
 import com.opom.bankingapp.dto.auth.RegisterPersonalDetailsRequest;
+import com.opom.bankingapp.dto.common.OptionDto;
+import com.opom.bankingapp.dto.user.ProfileDetailsDto;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.repository.UserRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -17,6 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
@@ -285,5 +288,50 @@ public class JdbcUserRepository implements UserRepository {
     public List<UserAdminResponse> findAllUsersForAdmin() {
         String sql = FIND_ALL_USERS_SQL + " ORDER BY u.created_at DESC";
         return jdbcTemplate.query(sql, new UserAdminResponseRowMapper());
+    }
+
+    private static class ProfileDetailsDtoRowMapper implements RowMapper<ProfileDetailsDto> {
+        @Override
+        public ProfileDetailsDto mapRow(ResultSet rs, int rowNum) throws SQLException {
+            OptionDto gender = new OptionDto(rs.getInt("gender_id"), rs.getString("gender_name"));
+            OptionDto nationality = new OptionDto(rs.getInt("nationality_id"), rs.getString("nationality_name"));
+
+            return new ProfileDetailsDto(
+                    rs.getString("fullname"),
+                    rs.getObject("date_of_birth", LocalDate.class),
+                    gender,
+                    nationality,
+                    rs.getBoolean("is_policy_agreement"),
+                    rs.getBoolean("is_auto_save_receipt"),
+                    rs.getObject("selected_account_id", Long.class)
+            );
+        }
+    }
+
+    @Override
+    public Optional<ProfileDetailsDto> findProfileDetailsByUserId(Long userId) {
+        String sql = """
+            SELECT
+                pd.fullname,
+                pd.date_of_birth,
+                pd.is_policy_agreement,
+                pd.is_auto_save_receipt,
+                pd.selected_account_id,
+                g.id AS gender_id,
+                g.name AS gender_name,
+                n.id AS nationality_id,
+                n.name AS nationality_name
+            FROM Profile_detail pd
+            JOIN Users u ON u.profile_id = pd.id
+            LEFT JOIN Gender g ON pd.gender_id = g.id
+            LEFT JOIN Nationality n ON pd.nationality_id = n.id
+            WHERE u.id = ?
+        """;
+        try {
+            ProfileDetailsDto details = jdbcTemplate.queryForObject(sql, new ProfileDetailsDtoRowMapper(), userId);
+            return Optional.ofNullable(details);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 }
