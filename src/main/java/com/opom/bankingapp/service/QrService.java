@@ -1,11 +1,8 @@
 package com.opom.bankingapp.service;
 
+import com.opom.bankingapp.dto.scan.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.opom.bankingapp.dto.scan.GenerateFromAccountTokenRequest;
-import com.opom.bankingapp.dto.scan.GenerateQrRequest;
-import com.opom.bankingapp.dto.scan.GenerateQrResponse;
-import com.opom.bankingapp.dto.scan.ScannedQrRequest;
 import com.opom.bankingapp.model.UserPrincipal;
 
 public interface QrService {
@@ -15,5 +12,7 @@ public interface QrService {
     
     SseEmitter subscribeTopic(String topic);
 
-	void handleQrScan(UserPrincipal user,ScannedQrRequest request);
+    QrToReceiveResponse handleQrToReceiveScan(UserPrincipal user, ScannedQrRequest request);
+
+    void handleQrToPayScan(UserPrincipal user, ScannedQrRequest request);
 }

@@ -1,5 +1,6 @@
 package com.opom.bankingapp.controller.personalbanking;
 
+import com.opom.bankingapp.dto.scan.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,10 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.opom.bankingapp.dto.common.ApiResponse;
-import com.opom.bankingapp.dto.scan.GenerateFromAccountTokenRequest;
-import com.opom.bankingapp.dto.scan.GenerateQrRequest;
-import com.opom.bankingapp.dto.scan.GenerateQrResponse;
-import com.opom.bankingapp.dto.scan.ScannedQrRequest;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.service.QrService;
 
@@ -58,8 +55,16 @@ public class ScanQrGenerateController {
     }
     
     @PostMapping("/qr-to-receive/scan")
-    public ResponseEntity<ApiResponse<Boolean>> handleQrScan(@RequestBody ScannedQrRequest request,@AuthenticationPrincipal UserPrincipal user) {
-    	qrService.handleQrScan(user,request);
+    public ResponseEntity<ApiResponse<QrToReceiveResponse>> handleQrToReceiveScan(@RequestBody ScannedQrRequest request,@AuthenticationPrincipal UserPrincipal user) {
+    	QrToReceiveResponse qrToReceiveResponse = qrService.handleQrToReceiveScan(user,request);
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "Scanned!!!", qrToReceiveResponse)
+        );
+    }
+
+    @PostMapping("/qr-to-pay/scan")
+    public ResponseEntity<ApiResponse<Boolean>> handleQrToPayScan(@RequestBody ScannedQrRequest request,@AuthenticationPrincipal UserPrincipal user) {
+        qrService.handleQrToPayScan(user,request);
         return ResponseEntity.ok(
                 new ApiResponse<>(HttpStatus.OK.value(), "Scanned!!!", true)
         );

@@ -4,18 +4,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.opom.bankingapp.dto.scan.*;
+import com.opom.bankingapp.dto.transfer.ValidateTransferRequest;
+import com.opom.bankingapp.dto.transfer.ValidateTransferResponse;
+import com.opom.bankingapp.service.TransferService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.opom.bankingapp.dto.common.ApiResponse;
-import com.opom.bankingapp.dto.scan.FromAccountTokenPayload;
-import com.opom.bankingapp.dto.scan.GenerateFromAccountTokenRequest;
-import com.opom.bankingapp.dto.scan.GenerateQrRequest;
-import com.opom.bankingapp.dto.scan.GenerateQrResponse;
-import com.opom.bankingapp.dto.scan.QrTokenPayload;
-import com.opom.bankingapp.dto.scan.ScannedQrRequest;
 import com.opom.bankingapp.dto.user.AccountDetailResponse;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.repository.AccountRepository;
@@ -31,13 +29,15 @@ public class QrServiceImpl implements QrService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final SseEmitterService sseEmitterService;
+    private final TransferService transferService;
     
     public QrServiceImpl(TokenService tokenService, AccountRepository accountRepository, UserRepository userRepository,
-    					SseEmitterService sseEmitterService) {
+    					SseEmitterService sseEmitterService, TransferService transferService) {
         this.tokenService = tokenService;
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.sseEmitterService = sseEmitterService;
+        this.transferService = transferService;
     }
 
     @Override
@@ -99,26 +99,46 @@ public class QrServiceImpl implements QrService {
     }
 
 	@Override
-	public void handleQrScan(UserPrincipal user,ScannedQrRequest request) {
-      tokenService.decode(request.token(),FromAccountTokenPayload.class);
-      long toAccountId;
+	public QrToReceiveResponse handleQrToReceiveScan(UserPrincipal user,ScannedQrRequest request) {
+        Optional<QrTokenPayload> payloadOpt = tokenService.decode(request.getToken(),QrTokenPayload.class);
 
-      Optional<Long> selectedAccountIdOpt = userRepository.findSelectedAccountIdByUserId(user.getId());
+        QrTokenPayload payload = payloadOpt.orElseThrow(() -> new BadCredentialsException("Invalid or expired topic token"));
 
-      if (selectedAccountIdOpt.isPresent()) {
-          toAccountId = selectedAccountIdOpt.get();
-      } else {
-          List<AccountDetailResponse> accounts = accountRepository.findAccountsByUserId(user.getId());
-          if (accounts.isEmpty()) {
-              throw new BadCredentialsException("User has no account");
-          }
-          toAccountId = accounts.get(0).id();
-      }
-      Map<String, Object> data = Map.of("toAccountId", toAccountId);
-      ApiResponse<Map<String, Object>> response = new ApiResponse<>(
-    	        HttpStatus.OK.value(),
-    	        "Scanned successfully",
-    	        data);
-      sseEmitterService.broadcast(request.token(), response);
+        QrToReceiveResponse responseData = null;
+        if (payload.toAccountId() != null) {
+             responseData = new QrToReceiveResponse(
+                    transferService.validateTransfer(
+                            user.getId(),
+                            new ValidateTransferRequest(payload.toAccountId().intValue())
+                    ),
+                    payload.amount(),
+                    payload.note()
+            );
+        }
+
+      return responseData;
+
 	}
+
+    @Override
+    public void handleQrToPayScan(UserPrincipal user, ScannedQrRequest request) {
+        Optional<FromAccountTokenPayload> payloadOpt = tokenService.decode(request.getToken(),FromAccountTokenPayload.class);
+
+        payloadOpt.orElseThrow(() -> new BadCredentialsException("Invalid or expired topic token"));
+
+        long toAccountId = 0;
+
+        Optional<Long> selectedAccountIdOpt = userRepository.findSelectedAccountIdByUserId(user.getId());
+
+        if (selectedAccountIdOpt.isPresent()) {
+            toAccountId = selectedAccountIdOpt.get();
+        }
+
+        Map<String, Object> data = Map.of("toAccountId", toAccountId);
+        ApiResponse<Map<String, Object>> response = new ApiResponse<>(
+                HttpStatus.OK.value(),
+                "Scanned successfully",
+                data);
+        sseEmitterService.broadcast(request.getToken(), response);
+    }
 }
