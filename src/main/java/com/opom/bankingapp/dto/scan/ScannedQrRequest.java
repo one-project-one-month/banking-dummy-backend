@@ -1,3 +1,13 @@
 package com.opom.bankingapp.dto.scan;
 
-public record ScannedQrRequest(String token) {}
+public class ScannedQrRequest {
+    private String token;
+
+    public String getToken() {
+        return token;
+    }
+
+    public ScannedQrRequest(String token) {
+        this.token = token;
+    }
+}

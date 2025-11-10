@@ -76,7 +76,7 @@ public class AuthServiceImpl implements AuthService {
         String generatedOtp = String.valueOf(otpNumber);
 
         OTP_STORE.put(email, generatedOtp);
-//        emailService.sendOtpEmail(email, generatedOtp);
+        emailService.sendOtpEmail(email, generatedOtp);
         return generatedOtp;
     }
 
