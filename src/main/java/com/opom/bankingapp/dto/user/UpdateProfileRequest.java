@@ -17,5 +17,11 @@ public record UpdateProfileRequest(
     Integer genderId,
 
     @NotNull(message = "Nationality ID is required")
-    Integer nationalityId
+    Integer nationalityId,
+
+    @NotBlank(message = "Phone number cannot be blank")
+    String phoneNumber,
+
+    @NotBlank(message = "Address cannot be blank")
+    String address
 ) {}

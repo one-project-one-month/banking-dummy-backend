@@ -338,6 +338,8 @@ public class JdbcUserRepository implements UserRepository {
             return new ProfileDetailsDto(
                     rs.getString("fullname"),
                     rs.getObject("date_of_birth", LocalDate.class),
+                    rs.getString("phone_number"),
+                    rs.getString("address"),
                     gender,
                     nationality,
                     rs.getBoolean("is_policy_agreement"),
@@ -353,6 +355,8 @@ public class JdbcUserRepository implements UserRepository {
             SELECT
                 pd.fullname,
                 pd.date_of_birth,
+                pd.phone_number,
+                pd.address,
                 pd.is_policy_agreement,
                 pd.is_auto_save_receipt,
                 pd.selected_account_id,
@@ -384,7 +388,9 @@ public class JdbcUserRepository implements UserRepository {
                 pd.fullname = ?,
                 pd.date_of_birth = ?,
                 pd.gender_id = ?,
-                pd.nationality_id = ?
+                pd.nationality_id = ?,
+                pd.phone_number = ?,
+                pd.address = ?
             WHERE u.id = ?
         """;
         jdbcTemplate.update(sql,
@@ -392,6 +398,8 @@ public class JdbcUserRepository implements UserRepository {
                 request.dateOfBirth(),
                 request.genderId(),
                 request.nationalityId(),
+                request.phoneNumber(),
+                request.address(),
                 userId
         );
     }
