@@ -1,9 +1,39 @@
+logging:
+  level:
+    root: ERROR # Display error logs only to reduce server logs by Vinn
+
+    # Core Spring logs
+    org.springframework: ERROR
+    org.springframework.boot: ERROR
+    org.springframework.web: ERROR
+    org.springframework.context: ERROR
+    org.springframework.beans: ERROR
+
+    org.springframework.web.servlet: ERROR
+    org.springframework.web.servlet.mvc.method.annotation: ERROR
+
+    org.springframework.security: ERROR
+    org.springframework.security.web.FilterChainProxy: ERROR
+
+    org.springframework.http.converter: ERROR
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter: ERROR
+
+    org.hibernate.SQL: ERROR
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    org.hibernate.engine.transaction.internal.TransactionImpl: ERROR
+
 spring:
+#  mvc:
+#    log-request-details: true
+#  web:
+#    log-request-details: true
+
   datasource:
-    url: jdbc:mysql://localhost:3306/banking_dummy_backend_db?createDatabaseIfNotExist=true
+    url: jdbc:mysql://shinkansen.proxy.rlwy.net:12078/railway
     username: root
-    password: mysql
+    password: XfEmQOvXFJZbCBeyqsxNpbPcGyUbVKbd
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   mail:
     host: "smtp.gmail.com"
     port: "587"

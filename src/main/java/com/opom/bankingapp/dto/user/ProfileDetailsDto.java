@@ -6,6 +6,8 @@ import java.time.LocalDate;
 public record ProfileDetailsDto(
     String fullname,
     LocalDate dateOfBirth,
+    String phoneNumber,
+    String address,
     OptionDto gender,
     OptionDto nationality,
     boolean isPolicyAgreement,
