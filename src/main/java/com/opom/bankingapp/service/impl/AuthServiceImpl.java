@@ -145,13 +145,14 @@ public class AuthServiceImpl implements AuthService {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
         String jwtToken = jwtService.generateToken(userPrincipal);
+        String refreshToken = jwtService.generateRefreshToken(userPrincipal);
 
         double balance = accountRepository.findBalanceByUserId(userPrincipal.getId())
                 .orElse(0.0);
 
         return new AuthResponse(
                 jwtToken,
-                null,
+                refreshToken,
                 userPrincipal.getEmail(),
                 userPrincipal.getUsername(),
                 balance

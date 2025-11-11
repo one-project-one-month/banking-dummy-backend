@@ -10,5 +10,6 @@ public class BankingAppApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(BankingAppApplication.class, args);
+        System.out.println("Started Banking App at http://localhost:7777");
     }
 }
