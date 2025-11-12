@@ -1,8 +1,6 @@
 package com.opom.bankingapp.features.faq.service;
 
-import com.opom.bankingapp.dto.faq.FaqDetailResponse;
-import com.opom.bankingapp.dto.faq.FaqListResponse;
-import com.opom.bankingapp.dto.faq.FaqRequest;
+import com.opom.bankingapp.dto.faq.*;
 
 public interface FaqService {
     FaqDetailResponse createFaq(Long createdBy, FaqRequest request);
@@ -10,4 +8,5 @@ public interface FaqService {
     void deleteFaq(Long faqId);
     FaqDetailResponse getFaqById(Long faqId);
     FaqListResponse getAllFaqs();
+    AskFaqResponse askQuestion(AskFaqRequest request);
 }
