@@ -7,6 +7,7 @@ import java.util.Optional;
 import com.opom.bankingapp.dto.scan.*;
 import com.opom.bankingapp.dto.transfer.ValidateTransferRequest;
 import com.opom.bankingapp.dto.transfer.ValidateTransferResponse;
+import com.opom.bankingapp.exception.ResourceNotFoundException;
 import com.opom.bankingapp.service.TransferService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -119,7 +120,7 @@ public class QrServiceImpl implements QrService {
 
         payloadOpt.orElseThrow(() -> new BadCredentialsException("Invalid or expired topic token"));
 
-        long toAccountId = 0;
+        /*long toAccountId = 0;
 
         Optional<Long> selectedAccountIdOpt = userRepository.findSelectedAccountIdByUserId(user.getId());
 
@@ -132,6 +133,18 @@ public class QrServiceImpl implements QrService {
                 HttpStatus.OK.value(),
                 "Scanned successfully",
                 data);
+        */
+        Long toAccountId = userRepository.findSelectedAccountIdByUserId(user.getId())
+                .orElseThrow(() -> new BadCredentialsException("No selected account found for scanning user."));
+
+        AccountDetailResponse toAccountDetails = accountRepository.findAccountDetailsById(toAccountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account details not found for ID: " + toAccountId));
+
+        ApiResponse<AccountDetailResponse> response = new ApiResponse<>(
+                HttpStatus.OK.value(),
+                "Scanned successfully",
+                toAccountDetails
+        );
         sseEmitterService.broadcast(request.getToken(), response);
     }
 }
