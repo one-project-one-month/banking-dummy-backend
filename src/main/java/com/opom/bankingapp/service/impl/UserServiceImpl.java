@@ -65,6 +65,8 @@ public class UserServiceImpl implements UserService {
                 user.getEmail(),
                 user.getUsername(),
                 profile.fullname(),
+                profile.phoneNumber(),
+                profile.address(),
                 profile.dateOfBirth(),
                 profile.gender(),
                 profile.nationality(),
