@@ -72,6 +72,8 @@ public class UserServiceImpl implements UserService {
                 profile.nationality(),
                 profile.isPolicyAgreement(),
                 profile.isAutoSaveReceipt(),
+                profile.isFirstTimeLogin(),
+                profile.hasInitialPin(),
                 balance,
                 selectedAccountDetails
         );

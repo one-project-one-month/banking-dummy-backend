@@ -15,6 +15,8 @@ public record UserDetailsResponse(
     OptionDto nationality,
     boolean isPolicyAgreement,
     boolean isAutoSaveReceipt,
+    boolean isFirstTimeLogin,
+    boolean hasInitialPin,
     double currentBalance,
     AccountDetailResponse selectedAccountDetails
 ) {}
