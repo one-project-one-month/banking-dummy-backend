@@ -25,35 +25,37 @@ public class JdbcTransactionRepository implements TransactionRepository {
         @Override
         public RecentTransfer mapRow(ResultSet rs, int rowNum) throws SQLException {
             UserSummary user = new UserSummary(
-                rs.getInt("recipient_user_id"),
-                rs.getString("recipient_fullname")
+                    rs.getInt("recipient_user_id"),
+                    rs.getString("recipient_fullname")
             );
             AccountDetailResponse account = new AccountDetailResponse(
-                rs.getInt("recipient_account_id"),
-                rs.getString("recipient_account_number"),
-                rs.getDouble("transaction_amount")
+                    rs.getInt("recipient_account_id"),
+                    rs.getString("recipient_account_number"),
+                    rs.getDouble("transaction_amount")
             );
-            return new RecentTransfer(user, account);
+            boolean isIncome = rs.getBoolean("is_income");
+            return new RecentTransfer(user, account, isIncome);
         }
     }
 
     @Override
     public List<RecentTransfer> findRecentTransfersByUserId(Long userId) {
         String sql = "SELECT " +
-            "    t.created_at, " +
-            "    t.amount AS transaction_amount, " +
-            "    u_recipient.id AS recipient_user_id, " +
-            "    pd_recipient.fullname AS recipient_fullname, " +
-            "    ad_recipient.id AS recipient_account_id, " +
-            "    ad_recipient.account_number AS recipient_account_number " +
-            "FROM Transaction t " +
-            "JOIN Account_detail ad_sender ON t.debit_account_id = ad_sender.id " +
-            "JOIN Account_detail ad_recipient ON t.credit_account_id = ad_recipient.id " +
-            "JOIN Users u_recipient ON ad_recipient.user_id = u_recipient.id " +
-            "JOIN Profile_detail pd_recipient ON u_recipient.profile_id = pd_recipient.id " +
-            "WHERE ad_sender.user_id = ? " +
-            "ORDER BY t.created_at DESC " +
-            "LIMIT 5";
+                "    t.created_at, " +
+                "    t.amount AS transaction_amount, " +
+                "    u_recipient.id AS recipient_user_id, " +
+                "    pd_recipient.fullname AS recipient_fullname, " +
+                "    ad_recipient.id AS recipient_account_id, " +
+                "    ad_recipient.account_number AS recipient_account_number, " +
+                "    FALSE AS is_income " +
+                "FROM Transaction t " +
+                "JOIN Account_detail ad_sender ON t.debit_account_id = ad_sender.id " +
+                "JOIN Account_detail ad_recipient ON t.credit_account_id = ad_recipient.id " +
+                "JOIN Users u_recipient ON ad_recipient.user_id = u_recipient.id " +
+                "JOIN Profile_detail pd_recipient ON u_recipient.profile_id = pd_recipient.id " +
+                "WHERE ad_sender.user_id = ? " +
+                "ORDER BY t.created_at DESC " +
+                "LIMIT 5";
 
         return jdbcTemplate.query(sql, new RecentTransferRowMapper(), userId);
     }
@@ -66,21 +68,42 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
     @Override
     public List<RecentTransfer> findTransactionHistoryByUserId(Long userId) {
-        String sql = "SELECT " +
-                "    t.created_at, " +
-                "    t.amount AS transaction_amount, " +
-                "    u_recipient.id AS recipient_user_id, " +
-                "    pd_recipient.fullname AS recipient_fullname, " +
-                "    ad_recipient.id AS recipient_account_id, " +
-                "    ad_recipient.account_number AS recipient_account_number " +
-                "FROM Transaction t " +
-                "JOIN Account_detail ad_sender ON t.debit_account_id = ad_sender.id " +
-                "JOIN Account_detail ad_recipient ON t.credit_account_id = ad_recipient.id " +
-                "JOIN Users u_recipient ON ad_recipient.user_id = u_recipient.id " +
-                "JOIN Profile_detail pd_recipient ON u_recipient.profile_id = pd_recipient.id " +
-                "WHERE ad_sender.user_id = ? " +
-                "ORDER BY t.created_at DESC";
+        String sql = """
+            SELECT 
+                t.created_at, 
+                t.amount AS transaction_amount, 
+                u_recipient.id AS recipient_user_id, 
+                pd_recipient.fullname AS recipient_fullname, 
+                ad_recipient.id AS recipient_account_id, 
+                ad_recipient.account_number AS recipient_account_number,
+                FALSE AS is_income
+            FROM Transaction t 
+            JOIN Account_detail ad_sender ON t.debit_account_id = ad_sender.id 
+            JOIN Account_detail ad_recipient ON t.credit_account_id = ad_recipient.id 
+            JOIN Users u_recipient ON ad_recipient.user_id = u_recipient.id 
+            JOIN Profile_detail pd_recipient ON u_recipient.profile_id = pd_recipient.id 
+            WHERE ad_sender.user_id = ?
 
-        return jdbcTemplate.query(sql, new RecentTransferRowMapper(), userId);
+            UNION ALL
+
+            SELECT 
+                t.created_at, 
+                t.amount AS transaction_amount, 
+                u_sender.id AS recipient_user_id, 
+                pd_sender.fullname AS recipient_fullname, 
+                ad_sender.id AS recipient_account_id, 
+                ad_sender.account_number AS recipient_account_number,
+                TRUE AS is_income
+            FROM Transaction t 
+            JOIN Account_detail ad_sender ON t.debit_account_id = ad_sender.id 
+            JOIN Account_detail ad_recipient ON t.credit_account_id = ad_recipient.id 
+            JOIN Users u_sender ON ad_sender.user_id = u_sender.id 
+            JOIN Profile_detail pd_sender ON u_sender.profile_id = pd_sender.id 
+            WHERE ad_recipient.user_id = ?
+
+            ORDER BY created_at DESC
+        """;
+
+        return jdbcTemplate.query(sql, new RecentTransferRowMapper(), userId, userId);
     }
 }
