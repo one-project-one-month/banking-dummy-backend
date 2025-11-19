@@ -12,5 +12,7 @@ public record ProfileDetailsDto(
     OptionDto nationality,
     boolean isPolicyAgreement,
     boolean isAutoSaveReceipt,
+    boolean isFirstTimeLogin,
+    boolean hasInitialPin,
     Long selectedAccountId
 ) {}

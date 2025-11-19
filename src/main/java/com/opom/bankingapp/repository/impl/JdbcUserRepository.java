@@ -152,7 +152,7 @@ public class JdbcUserRepository implements UserRepository {
     public void updatePin(Long userId, String hashedPin) {
         String sql = "UPDATE Profile_detail pd " +
                 "JOIN Users u ON u.profile_id = pd.id " +
-                "SET pd.pin = ? " +
+                "SET pd.pin = ?, pd.has_initial_pin = TRUE " +
                 "WHERE u.id = ?";
         jdbcTemplate.update(sql, hashedPin, userId);
     }
@@ -217,7 +217,7 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     @Transactional
     public void updatePassword(Long userId, String newHashedPassword) {
-        String sql = "UPDATE Users SET password = ? WHERE id = ?";
+        String sql = "UPDATE Users SET password = ?, is_first_time_login = FALSE WHERE id = ?";
         jdbcTemplate.update(sql, newHashedPassword, userId);
     }
 
@@ -344,6 +344,8 @@ public class JdbcUserRepository implements UserRepository {
                     nationality,
                     rs.getBoolean("is_policy_agreement"),
                     rs.getBoolean("is_auto_save_receipt"),
+                    rs.getBoolean("is_first_time_login"),
+                    rs.getBoolean("has_initial_pin"),
                     rs.getObject("selected_account_id", Long.class)
             );
         }
@@ -359,7 +361,9 @@ public class JdbcUserRepository implements UserRepository {
                 pd.address,
                 pd.is_policy_agreement,
                 pd.is_auto_save_receipt,
+                pd.has_initial_pin,
                 pd.selected_account_id,
+                u.is_first_time_login,
                 g.id AS gender_id,
                 g.name AS gender_name,
                 n.id AS nationality_id,
