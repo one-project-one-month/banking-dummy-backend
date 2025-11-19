@@ -118,6 +118,7 @@ CREATE TABLE Users (
                        profile_id INT,
                        role_id INT,
                        status INT DEFAULT 1,
+                       is_first_time_login BOOLEAN DEFAULT TRUE,
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                        created_by INT NULL,
@@ -131,11 +132,14 @@ CREATE TABLE Profile_detail (
                                 date_of_birth DATE,
                                 organization_id INT,
                                 gender_id INT,
+                                phone_number VARCHAR(20),
+                                address VARCHAR(200),
                                 selected_account_id INT,
                                 nationality_id INT,
                                 pin VARCHAR(255),
                                 is_policy_agreement BOOLEAN DEFAULT false,
                                 is_auto_save_receipt BOOLEAN DEFAULT false,
+                                has_initial_pin BOOLEAN DEFAULT false,
                                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                 created_by INT NULL,
@@ -351,7 +355,7 @@ VALUES (6, 'john.doe', 'john.doe@example.com', @hashed_password, 6, @customer_ro
 INSERT INTO Account_detail (id, account_number, user_id, account_type_id, current_balance, role_id)
 VALUES (2, '1000000001', 6, 1, 50000.00, @customer_role_id);
 
-UPDATE Profile_detail SET selected_account_id = 1 WHERE id = 6;
+UPDATE Profile_detail SET selected_account_id = 1 WHERE id = 15;
 
 INSERT INTO Profile_detail (id, fullname, date_of_birth, gender_id, nationality_id, is_policy_agreement, pin)
 VALUES (2, 'Jane Smith', '1992-05-20', 2, 2, TRUE, @hashed_password);
