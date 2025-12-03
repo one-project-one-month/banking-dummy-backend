@@ -136,4 +136,16 @@ public class JdbcAccountRepository implements AccountRepository {
 
         return Objects.requireNonNull(keyHolder.getKey()).longValue();
     }
+
+	@Override
+	public Optional<Long> findAccountById(Long id) {
+		 String sql = "SELECT id FROM Account_detail WHERE id = ?";
+
+		    try {
+		        Long foundId = jdbcTemplate.queryForObject(sql, Long.class, id);
+		        return Optional.of(foundId);
+		    } catch (EmptyResultDataAccessException e) {
+		        return Optional.empty();
+		    }
+	}
 }

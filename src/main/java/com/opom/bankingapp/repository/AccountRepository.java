@@ -14,4 +14,5 @@ public interface AccountRepository {
     Optional<AccountDetailResponse> findAccountDetailsById(Long accountId);
     Optional<MeResponse> findMeByAccountDetailsId(Long accountId);
     long createAccount(long userId, String accountNumber, int accountTypeId, double initialBalance, long createdBy);
+    Optional<Long> findAccountById(Long id);
 }

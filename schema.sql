@@ -125,6 +125,20 @@ CREATE TABLE Users (
                        updated_by INT NULL
 );
 
+-- Table: Deposit
+CREATE TABLE Deposit (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    transaction_id INT NOT NULL,
+    account_id INT NOT NULL,
+    amount DECIMAL(19,4) NOT NULL,
+    transaction_type INT NOT NULL,
+    status TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by INT NULL,
+    updated_by INT NULL
+);
+
 -- Table: profile_detail (renamed from "Profile Detail")
 CREATE TABLE Profile_detail (
                                 id INT PRIMARY KEY AUTO_INCREMENT,
