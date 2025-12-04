@@ -1,20 +1,23 @@
 package com.opom.bankingapp.repository.impl;
 
-import com.opom.bankingapp.dto.faq.FaqDetailResponse;
-import com.opom.bankingapp.dto.user.AccountDetailResponse;
-import com.opom.bankingapp.dto.user.RecentTransfer;
-import com.opom.bankingapp.dto.user.UserSummary;
-import com.opom.bankingapp.repository.TransactionRepository;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
+import com.opom.bankingapp.dto.admin.DepositResponse;
+import com.opom.bankingapp.dto.user.AccountDetailResponse;
+import com.opom.bankingapp.dto.user.RecentTransfer;
+import com.opom.bankingapp.dto.user.UserSummary;
+import com.opom.bankingapp.model.TransactionType;
+import com.opom.bankingapp.repository.TransactionRepository;
 
 @Repository
 public class JdbcTransactionRepository implements TransactionRepository {
@@ -71,6 +74,12 @@ public class JdbcTransactionRepository implements TransactionRepository {
     }
 
     @Override
+    public void saveTransactionWithType(Long fromAccountId, Long toAccountId, double amount, Integer transactionType, Long createdBy) {
+        String insertTxSql = "INSERT INTO Transaction (debit_account_id, credit_account_id, amount, transaction_type, created_by, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
+        jdbcTemplate.update(insertTxSql, fromAccountId, toAccountId, amount, transactionType, createdBy);
+    }
+
+    @Override
     public List<RecentTransfer> findTransactionHistoryByUserId(Long userId) {
         String sql = """
             SELECT 
@@ -120,6 +129,71 @@ public class JdbcTransactionRepository implements TransactionRepository {
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    private static final RowMapper<DepositResponse> DEPOSIT_MAPPER = (rs, rowNum) -> {
+        AccountDetailResponse accountDetail = new AccountDetailResponse(
+            rs.getInt("account_id"),
+            rs.getString("account_number"),
+            rs.getDouble("account_balance")
+        );
+        return new DepositResponse(
+            rs.getLong("id"),
+            rs.getLong("id"), // transaction_id is now the same as id
+            rs.getLong("credit_account_id"), // account_id for deposit is credit_account_id
+            rs.getBigDecimal("amount"),
+            TransactionType.fromCode(rs.getInt("transaction_type")),
+            true, // status is always true for deposits in Transaction table
+            rs.getTimestamp("created_at"),
+            rs.getTimestamp("updated_at"),
+            accountDetail
+        );
+    };
+
+    @Override
+    public List<DepositResponse> findDepositsByUserId(Long userId) {
+        String sql = """
+            SELECT 
+                t.id,
+                t.credit_account_id,
+                t.amount,
+                t.transaction_type,
+                t.created_at,
+                t.updated_at,
+                ad.id AS account_id,
+                ad.account_number,
+                ad.current_balance AS account_balance
+            FROM Users u
+            JOIN Profile_detail p ON u.profile_id = p.id
+            JOIN Transaction t ON t.credit_account_id = p.selected_account_id
+            JOIN Account_detail ad ON t.credit_account_id = ad.id
+            WHERE u.id = ? AND t.transaction_type = 1
+            ORDER BY t.created_at DESC
+            """;
+
+        return jdbcTemplate.query(sql, DEPOSIT_MAPPER, userId);
+    }
+
+    @Override
+    public List<DepositResponse> findAllDeposits() {
+        String sql = """
+            SELECT 
+                t.id,
+                t.credit_account_id,
+                t.amount,
+                t.transaction_type,
+                t.created_at,
+                t.updated_at,
+                ad.id AS account_id,
+                ad.account_number,
+                ad.current_balance AS account_balance
+            FROM Transaction t
+            JOIN Account_detail ad ON t.credit_account_id = ad.id
+            WHERE t.transaction_type = 1
+            ORDER BY t.created_at DESC
+            """;
+
+        return jdbcTemplate.query(sql, DEPOSIT_MAPPER);
     }
 
 }

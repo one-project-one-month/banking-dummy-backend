@@ -3,6 +3,7 @@ package com.opom.bankingapp.dto.admin;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import com.opom.bankingapp.dto.user.AccountDetailResponse;
 import com.opom.bankingapp.model.TransactionType;
 
 public record DepositResponse(
@@ -13,6 +14,7 @@ public record DepositResponse(
         TransactionType transactionType,
         boolean status,
         Timestamp createdAt,
-        Timestamp updatedAt
+        Timestamp updatedAt,
+        AccountDetailResponse accountDetail
 ) {}
 

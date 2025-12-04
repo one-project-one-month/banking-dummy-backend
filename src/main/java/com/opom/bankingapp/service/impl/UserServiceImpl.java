@@ -18,7 +18,6 @@ import com.opom.bankingapp.dto.user.UserDetailsResponse;
 import com.opom.bankingapp.exception.ResourceNotFoundException;
 import com.opom.bankingapp.model.UserPrincipal;
 import com.opom.bankingapp.repository.AccountRepository;
-import com.opom.bankingapp.repository.DepositRepository;
 import com.opom.bankingapp.repository.TransactionRepository;
 import com.opom.bankingapp.repository.UserRepository;
 import com.opom.bankingapp.service.UserService;
@@ -30,18 +29,15 @@ public class UserServiceImpl implements UserService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final PasswordEncoder passwordEncoder;
-    private final DepositRepository depositRepository;
     
     public UserServiceImpl(UserRepository userRepository,
                            AccountRepository accountRepository,
                            TransactionRepository transactionRepository,
-                           PasswordEncoder passwordEncoder,
-                           DepositRepository depositRepository) {
+                           PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.passwordEncoder = passwordEncoder;
-        this.depositRepository = depositRepository;
     }
 
     @Override
@@ -167,6 +163,6 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public List<DepositResponse> getDepositList(Long userId) {
-		return depositRepository.findDepositsByUserId(userId);
+		return transactionRepository.findDepositsByUserId(userId);
 	}
 }

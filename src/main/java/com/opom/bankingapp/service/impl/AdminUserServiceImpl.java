@@ -6,15 +6,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import com.opom.bankingapp.dto.admin.AccountActionRequest;
 import com.opom.bankingapp.dto.admin.ActionType;
 import com.opom.bankingapp.dto.admin.AdminApprovalDetails;
 import com.opom.bankingapp.dto.admin.DepositRequest;
+import com.opom.bankingapp.dto.admin.DepositResponse;
 import com.opom.bankingapp.dto.admin.UserListAdminResponse;
 import com.opom.bankingapp.exception.ResourceNotFoundException;
 import com.opom.bankingapp.model.UserStatus;
 import com.opom.bankingapp.repository.AccountRepository;
-import com.opom.bankingapp.repository.DepositRepository;
 import com.opom.bankingapp.repository.TransactionRepository;
 import com.opom.bankingapp.repository.UserRepository;
 import com.opom.bankingapp.service.AdminUserService;
@@ -28,15 +30,13 @@ public class AdminUserServiceImpl implements AdminUserService {
     private final PasswordEncoder passwordEncoder;
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
-    private final DepositRepository depositRepository;
     
-    public AdminUserServiceImpl(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder, AccountRepository accountRepository,TransactionRepository transactionRepository,DepositRepository depositRepository) {
+    public AdminUserServiceImpl(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder, AccountRepository accountRepository,TransactionRepository transactionRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
-        this.depositRepository = depositRepository;
     }
 
     @Override
@@ -90,15 +90,23 @@ public class AdminUserServiceImpl implements AdminUserService {
 	@Transactional
 	public void createDeposit(Long createdBy, DepositRequest request) {
 
-	    transactionRepository.findTransactionById(request.transactionId())
-	            .orElseThrow(() -> new ResourceNotFoundException(
-	                    "Transaction not found with ID: " + request.transactionId()));
-
 	    accountRepository.findAccountById(request.accountId())
 	            .orElseThrow(() -> new ResourceNotFoundException(
 	                    "Account not found with ID: " + request.accountId()));
-	    
-	    depositRepository.createDeposit(createdBy, request);
+
+	    transactionRepository.saveTransactionWithType(
+	        null,
+	        request.accountId(),
+	        request.amount(),
+	        request.transactionType().getCode(),
+	        createdBy
+	    );
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<DepositResponse> getAllDeposits() {
+		return transactionRepository.findAllDeposits();
 	}
 
 }
