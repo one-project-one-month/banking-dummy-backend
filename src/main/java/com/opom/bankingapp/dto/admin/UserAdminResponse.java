@@ -8,7 +8,7 @@ public record UserAdminResponse(
     String emailAddress,
     String role,
     String organizationName,
-    boolean status,
+    Integer status,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {}

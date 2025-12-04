@@ -29,9 +29,9 @@ spring:
 #    log-request-details: true
 
   datasource:
-    url: jdbc:mysql://shinkansen.proxy.rlwy.net:12078/railway
-    username: root
-    password: XfEmQOvXFJZbCBeyqsxNpbPcGyUbVKbd
+    url: jdbc:mysql://136.112.160.13:3306/banking_app
+    username: banking_user
+    password: BankingPassword123!
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   mail:

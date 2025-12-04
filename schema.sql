@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS Nickname;
 DROP TABLE IF EXISTS KYC;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS Profile_detail;
+DROP TABLE IF EXISTS Deposit;
 DROP TABLE IF EXISTS Transaction;
 DROP TABLE IF EXISTS Role;
 DROP TABLE IF EXISTS Media;
@@ -125,20 +126,6 @@ CREATE TABLE Users (
                        updated_by INT NULL
 );
 
--- Table: Deposit
-CREATE TABLE Deposit (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    transaction_id INT NOT NULL,
-    account_id INT NOT NULL,
-    amount DECIMAL(19,4) NOT NULL,
-    transaction_type INT NOT NULL,
-    status TINYINT(1) DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    created_by INT NULL,
-    updated_by INT NULL
-);
-
 -- Table: profile_detail (renamed from "Profile Detail")
 CREATE TABLE Profile_detail (
                                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -166,6 +153,7 @@ CREATE TABLE Transaction (
                              credit_account_id INT,
                              debit_account_id INT,
                              amount DECIMAL(19, 4),
+                             transaction_type INT,
                              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                              updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                              created_by INT NULL,
@@ -356,7 +344,7 @@ CREATE TABLE Organization (
                               updated_by BIGINT NULL
 );
 
-SET @hashed_password = '$2a$10$T.SC.OMcLRkPB8vM.A/3He.XW6A/T/rTpvY5A5Lz9.Qo8J7j68f.O';
+SET @hashed_password = '$2a$12$n7itymnC873dYJsxR1gJiuJ4o4dkJqVFAzLz1.ihMVEcB4kN6RWF.';
 
 SET @customer_role_id = (SELECT id FROM Role WHERE role_type = 'CUSTOMER');
 
@@ -441,3 +429,20 @@ VALUES (
 UPDATE Profile_detail
 SET selected_account_id = (SELECT id FROM Account_detail WHERE user_id = @admin_user_id)
 WHERE id = (SELECT profile_id FROM Users WHERE id = @admin_user_id);
+
+UPDATE Users
+SET profile_id = 2
+WHERE id = 7;
+
+UPDATE Profile_detail
+SET selected_account_id = 3
+WHERE id = 2;
+
+UPDATE Users
+SET status = 2,
+    password = '$2a$12$n7itymnC873dYJsxR1gJiuJ4o4dkJqVFAzLz1.ihMVEcB4kN6RWF.'
+WHERE id = 8;
+
+UPDATE Profile_detail
+SET selected_account_id = 2
+WHERE id = 6;

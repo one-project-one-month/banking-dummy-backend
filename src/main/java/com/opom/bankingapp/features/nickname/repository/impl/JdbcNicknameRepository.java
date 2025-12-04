@@ -44,7 +44,7 @@ public class JdbcNicknameRepository implements NicknameRepository {
 	               a.id AS account_id,
 	               a.account_number
 	          FROM Nickname n
-	          JOIN Account_detail a ON n.to_account = a.id
+	          JOIN Account_detail a ON a.id = n.to_account
 	         WHERE n.from_account = ?
 	    """;
 

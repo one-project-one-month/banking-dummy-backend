@@ -267,7 +267,6 @@ public class JdbcUserRepository implements UserRepository {
     private static class UserAdminResponseRowMapper implements RowMapper<UserAdminResponse> {
         @Override
         public UserAdminResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
-            boolean status = rs.getInt("user_status") == 2;
 
             return new UserAdminResponse(
                     rs.getLong("user_id"),
@@ -275,7 +274,7 @@ public class JdbcUserRepository implements UserRepository {
                     rs.getString("email"),
                     rs.getString("role_type"),
                     rs.getString("organization_name"),
-                    status,
+                    rs.getInt("user_status"),
                     rs.getTimestamp("created_at").toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(),
                     Optional.ofNullable(rs.getTimestamp("updated_at"))
                             .map(t -> t.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
