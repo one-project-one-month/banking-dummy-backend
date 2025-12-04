@@ -4,14 +4,14 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import com.opom.bankingapp.dto.user.AccountDetailResponse;
-import com.opom.bankingapp.model.TransactionType;
+import com.opom.bankingapp.model.TransactionCategory;
 
 public record DepositResponse(
         Long id,
         Long transactionId,
         Long accountId,
         BigDecimal amount,
-        TransactionType transactionType,
+        TransactionCategory transactionType,
         boolean status,
         Timestamp createdAt,
         Timestamp updatedAt,

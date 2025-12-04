@@ -94,14 +94,16 @@ public class AdminUserServiceImpl implements AdminUserService {
 	            .orElseThrow(() -> new ResourceNotFoundException(
 	                    "Account not found with ID: " + request.accountId()));
 
-	    transactionRepository.saveTransactionWithType(
-	        null,
-	        request.accountId(),
-	        request.amount(),
-	        request.transactionType().getCode(),
-	        createdBy
-	    );
-	}
+        accountRepository.updateBalance(request.accountId(),
+                accountRepository.findBalanceByAccountId(request.accountId()).orElse(0.0) + request.amount());
+
+        transactionRepository.saveDeposit(
+                request.accountId(),
+                request.amount(),
+                request.transactionType().getCode(),
+                createdBy
+        );
+    }
 
 	@Override
 	@Transactional(readOnly = true)

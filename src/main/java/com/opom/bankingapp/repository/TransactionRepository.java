@@ -10,6 +10,7 @@ public interface TransactionRepository {
     List<RecentTransfer> findRecentTransfersByUserId(Long userId);
     void saveTransaction(Long fromAccountId, Long toAccountId, double amount, Long createdBy);
     void saveTransactionWithType(Long fromAccountId, Long toAccountId, double amount, Integer transactionType, Long createdBy);
+    void saveDeposit(Long toAccountId, double amount, Integer transactionCategoryId, Long createdBy);
     List<RecentTransfer> findTransactionHistoryByUserId(Long userId);
     Optional<Long> findTransactionById(Long id);
     List<DepositResponse> findDepositsByUserId(Long userId);

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+import com.opom.bankingapp.model.TransactionCategory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -96,6 +97,12 @@ public class JdbcTransactionRepository implements TransactionRepository {
     }
 
     @Override
+    public void saveDeposit(Long toAccountId, double amount, Integer transactionCategoryId, Long createdBy) {
+        String insertTxSql = "INSERT INTO Transaction (credit_account_id, amount, transaction_type, transaction_category_id, created_by, created_at) VALUES (?, ?, 1, ?, ?, NOW())";
+        jdbcTemplate.update(insertTxSql, toAccountId, amount, transactionCategoryId, createdBy);
+    }
+
+    @Override
     public List<RecentTransfer> findTransactionHistoryByUserId(Long userId) {
         String sql = """
             SELECT 
@@ -159,12 +166,15 @@ public class JdbcTransactionRepository implements TransactionRepository {
                 rs.getString("account_number"),
                 rs.getDouble("account_balance")
         );
+
+        TransactionCategory category = TransactionCategory.fromCode(rs.getInt("transaction_category_id"));
+
         return new DepositResponse(
                 rs.getLong("id"),
                 rs.getLong("id"),
                 rs.getLong("credit_account_id"),
                 rs.getBigDecimal("amount"),
-                TransactionType.fromCode(rs.getInt("transaction_type")),
+                category,
                 true,
                 rs.getTimestamp("created_at"),
                 rs.getTimestamp("updated_at"),
