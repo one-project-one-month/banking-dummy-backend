@@ -1,9 +1,7 @@
 package com.opom.bankingapp.repository.impl;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,14 +39,32 @@ public class JdbcTransactionRepository implements TransactionRepository {
                     rs.getDouble("transaction_amount")
             );
             boolean isIncome = rs.getBoolean("is_income");
-            return new RecentTransfer(user, account, isIncome);
+
+            int typeCode = rs.getInt("transaction_type");
+            TransactionType type = (typeCode > 0) ? TransactionType.fromCode(typeCode) : TransactionType.TRANSFER;
+
+            return new RecentTransfer(
+                    rs.getLong("id"),
+                    rs.getLong("id"), // mapping id to transactionId as well
+                    rs.getBigDecimal("transaction_amount"),
+                    type,
+                    true,
+                    rs.getTimestamp("created_at"),
+                    rs.getTimestamp("updated_at"),
+                    user,
+                    account,
+                    isIncome
+            );
         }
     }
 
     @Override
     public List<RecentTransfer> findRecentTransfersByUserId(Long userId) {
         String sql = "SELECT " +
+                "    t.id, " +
                 "    t.created_at, " +
+                "    t.updated_at, " +
+                "    t.transaction_type, " +
                 "    t.amount AS transaction_amount, " +
                 "    u_recipient.id AS recipient_user_id, " +
                 "    pd_recipient.fullname AS recipient_fullname, " +
@@ -69,7 +85,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
     @Override
     public void saveTransaction(Long fromAccountId, Long toAccountId, double amount, Long createdBy) {
-        String insertTxSql = "INSERT INTO Transaction (debit_account_id, credit_account_id, amount, created_by, created_at) VALUES (?, ?, ?, ?, NOW())";
+        String insertTxSql = "INSERT INTO Transaction (debit_account_id, credit_account_id, amount, transaction_type, created_by, created_at) VALUES (?, ?, ?, 3, ?, NOW())";
         jdbcTemplate.update(insertTxSql, fromAccountId, toAccountId, amount, createdBy);
     }
 
@@ -83,7 +99,10 @@ public class JdbcTransactionRepository implements TransactionRepository {
     public List<RecentTransfer> findTransactionHistoryByUserId(Long userId) {
         String sql = """
             SELECT 
+                t.id,
                 t.created_at, 
+                t.updated_at,
+                t.transaction_type,
                 t.amount AS transaction_amount, 
                 u_recipient.id AS recipient_user_id, 
                 pd_recipient.fullname AS recipient_fullname, 
@@ -100,7 +119,10 @@ public class JdbcTransactionRepository implements TransactionRepository {
             UNION ALL
 
             SELECT 
+                t.id,
                 t.created_at, 
+                t.updated_at,
+                t.transaction_type,
                 t.amount AS transaction_amount, 
                 u_sender.id AS recipient_user_id, 
                 pd_sender.fullname AS recipient_fullname, 
@@ -133,20 +155,20 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
     private static final RowMapper<DepositResponse> DEPOSIT_MAPPER = (rs, rowNum) -> {
         AccountDetailResponse accountDetail = new AccountDetailResponse(
-            rs.getInt("account_id"),
-            rs.getString("account_number"),
-            rs.getDouble("account_balance")
+                rs.getInt("account_id"),
+                rs.getString("account_number"),
+                rs.getDouble("account_balance")
         );
         return new DepositResponse(
-            rs.getLong("id"),
-            rs.getLong("id"), // transaction_id is now the same as id
-            rs.getLong("credit_account_id"), // account_id for deposit is credit_account_id
-            rs.getBigDecimal("amount"),
-            TransactionType.fromCode(rs.getInt("transaction_type")),
-            true, // status is always true for deposits in Transaction table
-            rs.getTimestamp("created_at"),
-            rs.getTimestamp("updated_at"),
-            accountDetail
+                rs.getLong("id"),
+                rs.getLong("id"),
+                rs.getLong("credit_account_id"),
+                rs.getBigDecimal("amount"),
+                TransactionType.fromCode(rs.getInt("transaction_type")),
+                true,
+                rs.getTimestamp("created_at"),
+                rs.getTimestamp("updated_at"),
+                accountDetail
         );
     };
 

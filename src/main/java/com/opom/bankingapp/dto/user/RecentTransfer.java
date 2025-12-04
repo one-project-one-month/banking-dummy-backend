@@ -1,7 +1,18 @@
 package com.opom.bankingapp.dto.user;
 
+import com.opom.bankingapp.model.TransactionType;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
 public record RecentTransfer(
-    UserSummary user,
-    AccountDetailResponse account,
-    boolean isIncome
+        Long id,
+        Long transactionId,
+        BigDecimal amount,
+        TransactionType transactionType,
+        boolean status,
+        Timestamp createdAt,
+        Timestamp updatedAt,
+        UserSummary user,
+        AccountDetailResponse account,
+        boolean isIncome
 ) {}

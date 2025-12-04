@@ -68,7 +68,7 @@ public class AdminUserServiceImpl implements AdminUserService {
             emailService.sendAccountApprovedEmail(userDetails.email(), userDetails.username(), newRawPassword);
 
         } else if (request.action() == ActionType.REJECT) {
-            newStatus = UserStatus.BLOCKED.getCode(); // 4
+            newStatus = UserStatus.INACTIVE.getCode(); // 4
             actionMessage = "rejected";
         } else {
             throw new IllegalArgumentException("Invalid action specified.");
