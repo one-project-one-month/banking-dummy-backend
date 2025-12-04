@@ -1,6 +1,8 @@
 package com.opom.bankingapp.service;
 
-import com.opom.bankingapp.dto.user.ChangeUserDetailRequest;
+import java.util.List;
+
+import com.opom.bankingapp.dto.admin.DepositResponse;
 import com.opom.bankingapp.dto.user.FromAccountsResponse;
 import com.opom.bankingapp.dto.user.RecentTransferListResponse;
 import com.opom.bankingapp.dto.user.UpdateProfileRequest;
@@ -20,4 +22,5 @@ public interface UserService {
     void switchAccount(Long userId, int accountId);
     UserDetailsResponse updateProfileDetails(UserPrincipal user, UpdateProfileRequest request);
     RecentTransferListResponse getTransactionHistory(Long userId);
+    List<DepositResponse> getDepositList(Long userId);
 }

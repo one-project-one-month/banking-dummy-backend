@@ -1,18 +1,27 @@
 package com.opom.bankingapp.service.impl;
 
-import com.opom.bankingapp.dto.user.*;
-import com.opom.bankingapp.exception.ResourceNotFoundException;
-import com.opom.bankingapp.service.UserService;
-import com.opom.bankingapp.model.UserPrincipal;
-import com.opom.bankingapp.repository.AccountRepository;
-import com.opom.bankingapp.repository.TransactionRepository;
-import com.opom.bankingapp.repository.UserRepository;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import com.opom.bankingapp.dto.admin.DepositResponse;
+import com.opom.bankingapp.dto.user.AccountDetailResponse;
+import com.opom.bankingapp.dto.user.FromAccountsResponse;
+import com.opom.bankingapp.dto.user.ProfileDetailsDto;
+import com.opom.bankingapp.dto.user.RecentTransferListResponse;
+import com.opom.bankingapp.dto.user.UpdateProfileRequest;
+import com.opom.bankingapp.dto.user.UserDetailsResponse;
+import com.opom.bankingapp.exception.ResourceNotFoundException;
+import com.opom.bankingapp.model.UserPrincipal;
+import com.opom.bankingapp.repository.AccountRepository;
+import com.opom.bankingapp.repository.DepositRepository;
+import com.opom.bankingapp.repository.TransactionRepository;
+import com.opom.bankingapp.repository.UserRepository;
+import com.opom.bankingapp.service.UserService;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -21,15 +30,18 @@ public class UserServiceImpl implements UserService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final DepositRepository depositRepository;
+    
     public UserServiceImpl(UserRepository userRepository,
                            AccountRepository accountRepository,
                            TransactionRepository transactionRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           DepositRepository depositRepository) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.passwordEncoder = passwordEncoder;
+        this.depositRepository = depositRepository;
     }
 
     @Override
@@ -152,4 +164,9 @@ public class UserServiceImpl implements UserService {
         var transfers = transactionRepository.findTransactionHistoryByUserId(userId);
         return new RecentTransferListResponse(transfers);
     }
+
+	@Override
+	public List<DepositResponse> getDepositList(Long userId) {
+		return depositRepository.findDepositsByUserId(userId);
+	}
 }

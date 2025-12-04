@@ -1,21 +1,40 @@
 package com.opom.bankingapp.controller.personalbanking;
 
-import com.opom.bankingapp.dto.common.ApiResponse;
-import com.opom.bankingapp.dto.user.*;
-import com.opom.bankingapp.service.UserService;
-import com.opom.bankingapp.model.UserPrincipal;
-import jakarta.validation.Valid;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.opom.bankingapp.dto.admin.DepositResponse;
+import com.opom.bankingapp.dto.common.ApiResponse;
+import com.opom.bankingapp.dto.user.AgreePolicyRequest;
+import com.opom.bankingapp.dto.user.ChangePasswordRequest;
+import com.opom.bankingapp.dto.user.FromAccountsResponse;
+import com.opom.bankingapp.dto.user.RecentTransferListResponse;
+import com.opom.bankingapp.dto.user.SetPinRequest;
+import com.opom.bankingapp.dto.user.SwitchAccountRequest;
+import com.opom.bankingapp.dto.user.UpdateProfileRequest;
+import com.opom.bankingapp.dto.user.UserDetailsResponse;
+import com.opom.bankingapp.dto.user.VerifyPinRequest;
+import com.opom.bankingapp.model.UserPrincipal;
+import com.opom.bankingapp.service.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/personal-banking/users")
 public class PersonalBankingUserController {
 
     private final UserService userService;
-
+    
     public PersonalBankingUserController(UserService userService) {
         this.userService = userService;
     }
@@ -85,6 +104,17 @@ public class PersonalBankingUserController {
 
         return ResponseEntity.ok(
                 new ApiResponse<>(HttpStatus.OK.value(), "Recent transfers retrieved", responseData)
+        );
+    }
+    
+    @GetMapping("/get-deposit-list")
+    public ResponseEntity<ApiResponse<List<DepositResponse>>> getDepositList(
+            @AuthenticationPrincipal UserPrincipal user) {
+
+        List<DepositResponse> deposits = userService.getDepositList(user.getId());
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "Deposit list retrieved", deposits)
         );
     }
 

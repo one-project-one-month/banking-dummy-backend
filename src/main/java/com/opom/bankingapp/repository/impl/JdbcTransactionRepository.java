@@ -1,9 +1,12 @@
 package com.opom.bankingapp.repository.impl;
 
+import com.opom.bankingapp.dto.faq.FaqDetailResponse;
 import com.opom.bankingapp.dto.user.AccountDetailResponse;
 import com.opom.bankingapp.dto.user.RecentTransfer;
 import com.opom.bankingapp.dto.user.UserSummary;
 import com.opom.bankingapp.repository.TransactionRepository;
+
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class JdbcTransactionRepository implements TransactionRepository {
@@ -106,4 +110,16 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
         return jdbcTemplate.query(sql, new RecentTransferRowMapper(), userId, userId);
     }
+	
+    @Override
+    public Optional<Long> findTransactionById(Long id) {
+        String sql = "SELECT id FROM `Transaction` WHERE id = ?";
+        try {
+            Long foundId = jdbcTemplate.queryForObject(sql, Long.class, id);
+            return Optional.of(foundId);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
 }
